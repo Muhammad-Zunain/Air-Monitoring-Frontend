@@ -17,6 +17,9 @@ import {
   ChevronLeft,
   ChevronRightOutlined,
   HomeOutlined,
+  ThermostatOutlined,
+  WaterDropOutlined,
+  AirOutlined,
   ShoppingCartOutlined,
   Groups2Outlined,
   ReceiptLongOutlined,
@@ -42,6 +45,21 @@ const navItems = [
   {
     text: "Geography",
     icon: <PublicOutlined />,
+  },
+
+  {
+    text: "Temperature",
+    icon: <ThermostatOutlined />,
+  },
+
+  {
+    text: "Humidity",
+    icon: <WaterDropOutlined />,
+  },
+
+  {
+    text: "Dust",
+    icon: <AirOutlined />
   },
   
   {

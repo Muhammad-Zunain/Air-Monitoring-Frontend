@@ -7,6 +7,9 @@ import { useSelector } from "react-redux";
 import Layout from "../pages/layout/Layout.jsx";
 import Dashboard from "../pages/Dashboard.jsx";
 import Geography from "../pages/Geography.jsx";
+import Humidity from "../pages/Humidity.jsx";
+import Dust from "../pages/Dust.jsx";
+import Temperature from "../pages/Temperature.jsx";
 
 function App() {
   const mode = useSelector((state) => state.global.mode);
@@ -26,6 +29,9 @@ function App() {
                 />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/geography" element={<Geography/>} />
+                <Route path="/temperature" element={<Temperature />} />
+                <Route path="/humidity" element={<Humidity />} />
+                <Route path="/dust" element={<Dust />} />
               </Route>
             </Routes>
           </ThemeProvider>

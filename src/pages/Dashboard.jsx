@@ -184,7 +184,7 @@ const Dashboard = () => {
           }}
         >
 
-          <Typography variant="h3" sx={{ color: theme.palette.secondary[100] }}>
+          <Typography variant="h3" fontWeight="bold" sx={{ color: theme.palette.secondary[100] }}>
             Real-time Data
           </Typography>
 
@@ -220,9 +220,6 @@ const Dashboard = () => {
           p="1.5rem"
           borderRadius="0.55rem"
         >
-          <Typography variant="h6" sx={{ color: theme.palette.secondary[100] }}>
-            Temperature Chart
-          </Typography>
           <BreakdownChart isDashboard={true} />
           
         </Box>

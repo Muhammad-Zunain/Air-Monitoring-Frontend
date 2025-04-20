@@ -6,16 +6,6 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import {
-  DownloadOutlined,
-  PointOfSale,
-  PersonAdd,
-  Traffic,
-  TrendingDownOutlined,
-  TrendingUpOutlined,
-  ThermostatOutlined,
-} from "@mui/icons-material";
-
 import { getStats } from "../features/selectors.js"; 
 import StatGroup from "../components/StatGroup";
 import CustomColumnMenu from "../components/DataGridCustomColumnMenu";

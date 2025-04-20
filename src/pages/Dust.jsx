@@ -6,15 +6,6 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import {
-  DownloadOutlined,
-  TrendingDownOutlined,
-  TrendingUpOutlined,
-  AirOutlined,
-  PointOfSale,
-  PersonAdd,
-  Traffic,
-} from "@mui/icons-material";
 import CustomColumnMenu from "../components/DataGridCustomColumnMenu";
 import BreakdownChart from "../components/BreakdownChart";
 import OverviewChart from "../components/OverviewChart";

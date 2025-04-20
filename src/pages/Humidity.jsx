@@ -1,62 +1,18 @@
 import React from "react";
 import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import {
-  DownloadOutlined,
-  OpacityOutlined,
-  TrendingDownOutlined,
-  TrendingUpOutlined,
-  PointOfSale,
-  PersonAdd,
-  Traffic,
-} from "@mui/icons-material";
 import CustomColumnMenu from "../components/DataGridCustomColumnMenu";
 import BreakdownChart from "../components/BreakdownChart";
 import OverviewChart from "../components/OverviewChart";
 import SectionHeader from "../components/SectionHeader";
 import StatGroup from "../components/StatGroup";
-
-import { nanoid } from '@reduxjs/toolkit';
+import { useSelector } from "react-redux";
+import { getStats } from "../features/selectors.js";
 
 const Humidity = () => {
- 
-  const data = [
-    { date: "2025-03-01", time: "12:00 AM", temperature: "25.3", humidity: "60.5", dust: "5.2" },
-  ];
-
-  const humidityStats = [
-    {
-      title: "Current Humidity",
-      value: "65%",
-      increase: "+5%",
-      description: "Since last week",
-      icon: <OpacityOutlined sx={{ color: "#4FC3F7", fontSize: 26 }} />,
-    },
-    {
-      title: "Highest Humidity Today",
-      value: "72%",
-      increase: "+3%",
-      description: "Since last week",
-      icon: <TrendingUpOutlined sx={{ color: "#EF5350", fontSize: 26 }} />,
-    },
-    {
-      title: "Lowest Humidity Today",
-      value: "58%",
-      increase: "-1%",
-      description: "Since last week",
-      icon: <TrendingDownOutlined sx={{ color: "#81D4FA", fontSize: 26 }} />,
-    },
-  ];
-
-  const rows = data.map((entry) => ({
-      _id: nanoid(),
-      timestamp: `${entry.date} ${entry.time}`,
-      temperature: entry.temperature,
-      humidity: entry.humidity, 
-      dust: entry.dust,     
-    }));
-
   const theme = useTheme();
+  const rows = useSelector((state) => state.data.entries); 
+  const humidityStats = useSelector(getStats("humidity")); 
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
   const isLoading = false;
 
@@ -83,7 +39,7 @@ const Humidity = () => {
           "& > div": { gridColumn: isNonMediumScreens ? undefined : "span 12" },
         }}
       >
-        <StatGroup data={humidityStats} />
+        <StatGroup data={humidityStats} /> {/* Pass the updated humidityStats */}
 
         <Box
           mt="20px"
@@ -127,6 +83,7 @@ const Humidity = () => {
             components={{ ColumnMenu: CustomColumnMenu }}
           />
         </Box>
+
         <Box
           mt="20px"
           gridColumn="span 12"
@@ -135,7 +92,7 @@ const Humidity = () => {
           p="1rem"
           borderRadius="0.55rem"
         >
-          <OverviewChart  isDashboard={true} />
+          <OverviewChart title="Humidity Levels" yLabel="Humidity" isDashboard={true} />
         </Box>
 
         <Box

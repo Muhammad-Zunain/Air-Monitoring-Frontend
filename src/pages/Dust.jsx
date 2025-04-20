@@ -20,46 +20,13 @@ import BreakdownChart from "../components/BreakdownChart";
 import OverviewChart from "../components/OverviewChart";
 import SectionHeader from "../components/SectionHeader";
 import StatGroup from "../components/StatGroup";
-import { nanoid } from "@reduxjs/toolkit";
-
+import { useSelector } from "react-redux";
+import { getStats } from "../features/selectors.js";
 
 const Dust = () => {
-  const data = [
-    { date: "2025-03-01", time: "12:00 AM", temperature: "25.3", humidity: "60.5", dust: "5.2" },
-  ];
-  const dustStats = [
-    {
-      title: "Current Dust Level",
-      value: "112 µg/m³",
-      increase: "+8%",
-      description: "Since yesterday",
-      icon: <AirOutlined sx={{ color: "#9E9D24", fontSize: 26 }} />,
-    },
-    {
-      title: "Highest Dust Level Today",
-      value: "130 µg/m³",
-      increase: "+3%",
-      description: "Since yesterday",
-      icon: <TrendingUpOutlined sx={{ color: "#EF5350", fontSize: 26 }} />,
-    },
-    {
-      title: "Lowest Dust Level Today",
-      value: "90 µg/m³",
-      increase: "-2%",
-      description: "Since yesterday",
-      icon: <TrendingDownOutlined sx={{ color: "#81D4FA", fontSize: 26 }} />,
-    },
-  ];
-
-  const rows = data.map((entry) => ({
-        _id: nanoid(),
-        timestamp: `${entry.date} ${entry.time}`,
-        temperature: entry.temperature,
-        humidity: entry.humidity, 
-        dust: entry.dust,     
-      }));
-
   const theme = useTheme();
+  const rows = useSelector((state) => state.data.entries);
+  const dustStats =  useSelector(getStats("dust"));
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
   const isLoading = false;
 
@@ -134,12 +101,11 @@ const Dust = () => {
           p="1rem"
           borderRadius="0.55rem"
         >
-          <OverviewChart view="sales" isDashboard={true} />
+          <OverviewChart 
+          title="Dust Levels Over Time"
+          yLabel="Dust"
+          isDashboard={true} />
         </Box>
-
-        
-
-        
 
         <Box
           mt="20px"

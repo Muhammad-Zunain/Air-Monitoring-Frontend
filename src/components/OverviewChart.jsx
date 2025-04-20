@@ -15,21 +15,19 @@ import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useTheme } from "@mui/material/styles";
+import { useSelector } from "react-redux";
 
-const OverviewChart = ({
-  data = [],
-  title = "Overview Chart",
-  yLabel = "Value",
-  isDashboard = false,
-}) => {
+const OverviewChart = ({ title , yLabel , isDashboard }) => {
+
+  const data = useSelector((state) => state.data.entries);
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const maxValue = useMemo(() => {
-    return Math.max(...data.map((item) => item[yLabel.toLowerCase()] ?? 0));
-  }, [data, yLabel]);
+  // const maxValue = useMemo(() => {
+  //   return Math.max(...data.map((item) => item[yLabel.toLowerCase()] ?? 0));
+  // }, [data, yLabel]);
 
   const chartData = useMemo(() => {
     if (!data || !Array.isArray(data)) return [];
@@ -111,7 +109,7 @@ const OverviewChart = ({
           <CircularProgress />
         </Box>
       ) : (
-        <Box height={maxValue * 20}>
+        <Box height={550}>
           <ResponsiveLine
             data={chartData}
             theme={{

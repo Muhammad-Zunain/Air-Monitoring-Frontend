@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
+import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import FlexBetween from "../components/FlexBetween";
-import Header from "../components/Header";
 import {
   DownloadOutlined,
   OpacityOutlined,
@@ -18,71 +10,51 @@ import {
   PersonAdd,
   Traffic,
 } from "@mui/icons-material";
-import StatBox from "../components/StatBox";
 import CustomColumnMenu from "../components/DataGridCustomColumnMenu";
 import BreakdownChart from "../components/BreakdownChart";
 import OverviewChart from "../components/OverviewChart";
+import SectionHeader from "../components/SectionHeader";
+import StatGroup from "../components/StatGroup";
+
+import { nanoid } from '@reduxjs/toolkit';
 
 const Humidity = () => {
-  const data = {
-    "12:00 AM": { temperature: "25.3", humidity: "60.5", dust: "5.2" },
-    "12:30 AM": { temperature: "24.8", humidity: "59.8", dust: "4.9" },
-    "1:00 AM": { temperature: "26.0", humidity: "58.3", dust: "5.1" },
-    "1:30 AM": { temperature: "24.5", humidity: "60.2", dust: "4.7" },
-    "2:00 AM": { temperature: "25.7", humidity: "61.1", dust: "5.0" },
-    "2:30 AM": { temperature: "24.9", humidity: "59.0", dust: "4.8" },
-    "3:00 AM": { temperature: "25.5", humidity: "58.7", dust: "4.6" },
-    "3:30 AM": { temperature: "24.3", humidity: "60.3", dust: "5.2" },
-    "4:00 AM": { temperature: "26.1", humidity: "61.5", dust: "5.0" },
-    "4:30 AM": { temperature: "25.8", humidity: "59.9", dust: "4.9" },
-    "5:00 AM": { temperature: "24.7", humidity: "60.1", dust: "5.3" },
-    "5:30 AM": { temperature: "25.2", humidity: "59.3", dust: "4.7" },
-    "6:00 AM": { temperature: "24.6", humidity: "60.4", dust: "5.0" },
-    "6:30 AM": { temperature: "25.3", humidity: "58.8", dust: "4.9" },
-    "7:00 AM": { temperature: "26.0", humidity: "59.5", dust: "5.1" },
-    "7:30 AM": { temperature: "24.4", humidity: "60.2", dust: "4.8" },
-    "8:00 AM": { temperature: "25.1", humidity: "59.0", dust: "5.0" },
-    "8:30 AM": { temperature: "24.9", humidity: "58.6", dust: "4.7" },
-    "9:00 AM": { temperature: "26.2", humidity: "60.3", dust: "5.3" },
-    "9:30 AM": { temperature: "25.4", humidity: "59.8", dust: "5.0" },
-    "10:00 AM": { temperature: "24.7", humidity: "59.9", dust: "4.6" },
-    "10:30 AM": { temperature: "25.6", humidity: "60.1", dust: "4.8" },
-    "11:00 AM": { temperature: "26.1", humidity: "60.4", dust: "5.0" },
-    "11:30 AM": { temperature: "25.8", humidity: "59.3", dust: "4.9" },
-    "12:00 PM": { temperature: "24.5", humidity: "60.2", dust: "5.1" },
-    "12:30 PM": { temperature: "25.7", humidity: "61.1", dust: "5.0" },
-    "1:00 PM": { temperature: "24.8", humidity: "59.4", dust: "4.8" },
-    "1:30 PM": { temperature: "25.2", humidity: "58.9", dust: "4.9" },
-    "2:00 PM": { temperature: "25.9", humidity: "60.0", dust: "5.2" },
-    "2:30 PM": { temperature: "24.3", humidity: "59.7", dust: "4.7" },
-    "3:00 PM": { temperature: "25.6", humidity: "60.5", dust: "5.1" },
-    "3:30 PM": { temperature: "24.7", humidity: "59.8", dust: "4.6" },
-    "4:00 PM": { temperature: "26.0", humidity: "60.6", dust: "5.0" },
-    "4:30 PM": { temperature: "25.3", humidity: "58.8", dust: "4.9" },
-    "5:00 PM": { temperature: "24.6", humidity: "60.2", dust: "5.1" },
-    "5:30 PM": { temperature: "25.5", humidity: "59.6", dust: "4.7" },
-    "6:00 PM": { temperature: "24.8", humidity: "60.0", dust: "5.2" },
-    "6:30 PM": { temperature: "25.1", humidity: "59.4", dust: "4.9" },
-    "7:00 PM": { temperature: "26.3", humidity: "60.5", dust: "5.0" },
-    "7:30 PM": { temperature: "24.9", humidity: "59.2", dust: "4.8" },
-    "8:00 PM": { temperature: "25.2", humidity: "60.4", dust: "4.9" },
-    "8:30 PM": { temperature: "24.5", humidity: "59.9", dust: "5.1" },
-    "9:00 PM": { temperature: "25.8", humidity: "60.3", dust: "4.7" },
-    "9:30 PM": { temperature: "24.4", humidity: "58.9", dust: "4.6" },
-    "10:00 PM": { temperature: "26.0", humidity: "60.2", dust: "5.2" },
-    "10:30 PM": { temperature: "25.3", humidity: "59.5", dust: "4.8" },
-    "11:00 PM": { temperature: "24.7", humidity: "60.0", dust: "5.1" },
-    "11:30 PM": { temperature: "25.6", humidity: "59.8", dust: "4.9" },
-    // Add more records as needed for 100 total
-  };
+ 
+  const data = [
+    { date: "2025-03-01", time: "12:00 AM", temperature: "25.3", humidity: "60.5", dust: "5.2" },
+  ];
 
-  const rows = Object.entries(data).map(([time, values], index) => ({
-    _id: index + 1,
-    timestamp: time,
-    temperature: values.temperature,
-    humidity: values.humidity,
-    dust: values.dust,
-  }));
+  const humidityStats = [
+    {
+      title: "Current Humidity",
+      value: "65%",
+      increase: "+5%",
+      description: "Since last week",
+      icon: <OpacityOutlined sx={{ color: "#4FC3F7", fontSize: 26 }} />,
+    },
+    {
+      title: "Highest Humidity Today",
+      value: "72%",
+      increase: "+3%",
+      description: "Since last week",
+      icon: <TrendingUpOutlined sx={{ color: "#EF5350", fontSize: 26 }} />,
+    },
+    {
+      title: "Lowest Humidity Today",
+      value: "58%",
+      increase: "-1%",
+      description: "Since last week",
+      icon: <TrendingDownOutlined sx={{ color: "#81D4FA", fontSize: 26 }} />,
+    },
+  ];
+
+  const rows = data.map((entry) => ({
+      _id: nanoid(),
+      timestamp: `${entry.date} ${entry.time}`,
+      temperature: entry.temperature,
+      humidity: entry.humidity, 
+      dust: entry.dust,     
+    }));
 
   const theme = useTheme();
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
@@ -98,23 +70,7 @@ const Humidity = () => {
 
   return (
     <Box m="1.5rem 2.5rem">
-      <FlexBetween>
-        <Header title="HUMIDITY" subtitle="Real-time humidity analytics and trends" />
-        <Box>
-          <Button
-            sx={{
-              backgroundColor: theme.palette.secondary.light,
-              color: theme.palette.background.alt,
-              fontSize: "14px",
-              fontWeight: "bold",
-              padding: "10px 20px",
-            }}
-          >
-            <DownloadOutlined sx={{ mr: "10px" }} />
-            Download Reports
-          </Button>
-        </Box>
-      </FlexBetween>
+      <SectionHeader title="Humidity" subtitle="Real-time data" />
 
       <Box
         mt="20px"
@@ -127,39 +83,8 @@ const Humidity = () => {
           "& > div": { gridColumn: isNonMediumScreens ? undefined : "span 12" },
         }}
       >
-        <StatBox
-          title="Current Humidity"
-          value="34%"
-          increase="+4%"
-          description="Since last month"
-          icon={
-            <OpacityOutlined
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
-            />
-          }
-        />
-        <StatBox
-          title="Highest Humidity Today"
-          value="60%"
-          increase="+2%"
-          description="Since last month"
-          icon={
-            <TrendingUpOutlined
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
-            />
-          }
-        />
-<StatBox
-          title="Lowest Humidity Today"
-          value="20%"
-          increase="+1%"
-          description="Since last month"
-          icon={
-            <TrendingDownOutlined
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
-            />
-          }
-        />
+        <StatGroup data={humidityStats} />
+
         <Box
           mt="20px"
           mb="20px"
@@ -186,8 +111,11 @@ const Humidity = () => {
             },
           }}
         >
-
-          <Typography variant="h3" fontWeight="bold" sx={{ color: theme.palette.secondary[100] }}>
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            sx={{ color: theme.palette.secondary[100] }}
+          >
             Real-time Data
           </Typography>
 
@@ -200,19 +128,15 @@ const Humidity = () => {
           />
         </Box>
         <Box
-        mt="20px"
+          mt="20px"
           gridColumn="span 12"
           gridRow="span 4"
           backgroundColor={theme.palette.background.alt}
           p="1rem"
           borderRadius="0.55rem"
         >
-          <OverviewChart view="sales" isDashboard={true} />
+          <OverviewChart  isDashboard={true} />
         </Box>
-
-        
-
-        
 
         <Box
           mt="20px"
@@ -224,7 +148,6 @@ const Humidity = () => {
           borderRadius="0.55rem"
         >
           <BreakdownChart isDashboard={true} />
-          
         </Box>
       </Box>
     </Box>

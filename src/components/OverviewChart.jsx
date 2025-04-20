@@ -16,89 +16,47 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useTheme } from "@mui/material/styles";
 
-const OverviewChart = ({ isDashboard }) => {
+const OverviewChart = ({
+  data = [],
+  title = "Overview Chart",
+  yLabel = "Value",
+  isDashboard = false,
+}) => {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const temperatureData = [
-    { date: "2025-03-01", time: "08:00", temperature: 22.9 },
-    { date: "2025-03-01", time: "12:00", temperature: 25.2 },
-    { date: "2025-03-01", time: "16:00", temperature: 25.9 },
-    { date: "2025-03-02", time: "08:00", temperature: 24.2 },
-    { date: "2025-03-02", time: "12:00", temperature: 22.8 },
-        { date: "2025-03-02", time: "16:00", temperature: 23.5 },
-    { date: "2025-03-02", time: "16:00", temperature: 23.7 },
-    { date: "2025-03-02", time: "08:00", temperature: 24.1 },
-    { date: "2025-03-02", time: "12:00", temperature: 23.9 },
-    { date: "2025-03-02", time: "16:00", temperature: 24.8 },
-    { date: "2025-03-02", time: "08:00", temperature: 23.4 },
-    { date: "2025-03-02", time: "12:00", temperature: 24.5 },
-    { date: "2025-03-02", time: "16:00", temperature: 25.0 },
-    { date: "2025-03-02", time: "08:00", temperature: 22.7 },
-    { date: "2025-03-02", time: "16:00", temperature: 23.5 },
-    { date: "2025-03-03", time: "08:00", temperature: 23.1 },
-    { date: "2025-03-03", time: "12:00", temperature: 24.3 },
-    { date: "2025-03-03", time: "16:00", temperature: 25.0 },
-    { date: "2025-03-03", time: "08:00", temperature: 22.5 },
-    { date: "2025-03-03", time: "12:00", temperature: 23.7 },
-    { date: "2025-03-03", time: "12:00", temperature: 24.0 },
-    { date: "2025-03-03", time: "16:00", temperature: 25.1 },
-    { date: "2025-03-04", time: "08:00", temperature: 22.4 },
-    { date: "2025-03-04", time: "12:00", temperature: 23.8 },
-    { date: "2025-03-04", time: "16:00", temperature: 24.6 },
+  const maxValue = useMemo(() => {
+    return Math.max(...data.map((item) => item[yLabel.toLowerCase()] ?? 0));
+  }, [data, yLabel]);
 
-    { date: "2025-03-05", time: "08:00", temperature: 21.9 },
-    // Daata for the rest of the month
-    { date: "2025-03-05", time: "12:00", temperature: 22.7 },
-    { date: "2025-03-05", time: "16:00", temperature: 23.4 },
-    { date: "2025-03-06", time: "08:00", temperature: 20.8 },
-    { date: "2025-03-06", time: "12:00", temperature: 21.6 },
-    { date: "2025-03-06", time: "16:00", temperature: 22.3 },
-    { date: "2025-03-07", time: "08:00", temperature: 19.7 },
-    { date: "2025-03-07", time: "12:00", temperature: 20.5 },
-    { date: "2025-03-07", time: "16:00", temperature: 21.2 },
-    { date: "2025-03-08", time: "08:00", temperature: 18.6 },
-    { date: "2025-03-08", time: "12:00", temperature: 19.4 },
-    { date: "2025-03-08", time: "16:00", temperature: 20.1 },
-
-    { date: "2025-03-09", time: "08:00", temperature: 17.5 },
-
-  ];
-
-  // Get the maximum temperature value for dynamic height calculation
-  const maxTemperature = useMemo(() => {
-    return Math.max(...temperatureData.map((item) => item.temperature));
-  }, [temperatureData]);
-
-  const temperatureLine = useMemo(() => {
-    if (!temperatureData || !Array.isArray(temperatureData)) return [];
+  const chartData = useMemo(() => {
+    if (!data || !Array.isArray(data)) return [];
 
     const selectedDateStr = selectedDate
       ? new Date(selectedDate).toLocaleDateString("en-CA")
       : null;
 
     const filtered = selectedDateStr
-      ? temperatureData.filter((item) => item.date === selectedDateStr)
-      : temperatureData;
+      ? data.filter((item) => item.date === selectedDateStr)
+      : data;
 
     const sorted = [...filtered].sort(
-      (a, b) =>
-        new Date(`1970-01-01T${a.time}`) - new Date(`1970-01-01T${b.time}`)
+      (a, b) => new Date(`1970-01-01T${a.time}`) - new Date(`1970-01-01T${b.time}`)
     );
 
     return [
       {
-        id: "Temperature (°C)",
+        id: yLabel,
         color: theme.palette.secondary.main,
         data: sorted.map((item) => ({
           x: item.time,
-          y: item.temperature,
+          y: item[yLabel.toLowerCase()],
         })),
       },
     ];
-  }, [temperatureData, selectedDate, theme]);
+  }, [data, selectedDate, theme, yLabel]);
 
   const handleFilterClick = (event) => {
     setFilterAnchorEl(event.currentTarget);
@@ -116,10 +74,10 @@ const OverviewChart = ({ isDashboard }) => {
 
   return (
     <Box sx={{ position: "relative", px: 1, py: 2 }}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" sx={{px: 2}}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ px: 2 }}>
         <Box display="flex" alignItems="center">
           <Typography variant="h4" fontWeight="bold" sx={{ mr: 1 }}>
-            Temperature Overview
+            {title}
           </Typography>
           <IconButton onClick={handleFilterClick}>
             <FilterList />
@@ -153,11 +111,9 @@ const OverviewChart = ({ isDashboard }) => {
           <CircularProgress />
         </Box>
       ) : (
-        <Box height={maxTemperature * 20}>
-          {" "}
-          {/* Adjusted height dynamically */}
+        <Box height={maxValue * 20}>
           <ResponsiveLine
-            data={temperatureLine}
+            data={chartData}
             theme={{
               axis: {
                 domain: { line: { stroke: theme.palette.secondary[200] } },
@@ -191,7 +147,7 @@ const OverviewChart = ({ isDashboard }) => {
               tickSize: 6,
               tickPadding: 5,
               tickRotation: -45,
-              legend: !isDashboard ? "" : "Time",
+              legend: isDashboard ? "Time" : "",
               legendOffset: 50,
               legendPosition: "middle",
             }}
@@ -199,7 +155,7 @@ const OverviewChart = ({ isDashboard }) => {
               tickSize: 5,
               tickPadding: 5,
               tickRotation: 0,
-              legend: !isDashboard ? "" : "Temperature (°C)",
+              legend: isDashboard ? yLabel : "",
               legendOffset: -60,
               legendPosition: "middle",
             }}
@@ -215,7 +171,6 @@ const OverviewChart = ({ isDashboard }) => {
               {
                 anchor: "top-right",
                 direction: "column",
-                justify: false,
                 translateX: -30,
                 translateY: -40,
                 itemsSpacing: 6,

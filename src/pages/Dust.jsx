@@ -12,12 +12,10 @@ import OverviewChart from "../components/OverviewChart";
 import SectionHeader from "../components/SectionHeader";
 import StatGroup from "../components/StatGroup";
 import { useSelector } from "react-redux";
-import { getStats } from "../features/selectors.js";
 
 const Dust = () => {
   const theme = useTheme();
   const rows = useSelector((state) => state.data.entries);
-  const dustStats =  useSelector(getStats("dust"));
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
   const isLoading = false;
 
@@ -43,7 +41,7 @@ const Dust = () => {
           "& > div": { gridColumn: isNonMediumScreens ? undefined : "span 12" },
         }}
       >
-        <StatGroup data={dustStats} />
+        <StatGroup type="dust" />
         
         <Box
           mt="20px"

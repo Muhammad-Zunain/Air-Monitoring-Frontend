@@ -1,5 +1,5 @@
-import React from "react";
-import StatBox from "./StatBox.jsx"; 
+import React, { useEffect } from "react";
+import StatBox from "./StatBox.jsx";
 import {
   ThermostatOutlined,
   TrendingUpOutlined,
@@ -7,18 +7,22 @@ import {
   AirOutlined,
   OpacityOutlined,
 } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 
 const iconMap = {
-  thermostat: <ThermostatOutlined sx={{ fontSize: 26, color: "#FFA726" }} />,
+  temperature: <ThermostatOutlined sx={{ fontSize: 26, color: "#FFA726" }} />,
   humidity: <OpacityOutlined sx={{ fontSize: 26, color: "#4FC3F7" }} />,
   dust: <AirOutlined sx={{ fontSize: 26, color: "#9E9D24" }} />,
   up: <TrendingUpOutlined sx={{ fontSize: 26, color: "#EF5350" }} />,
   down: <TrendingDownOutlined sx={{ fontSize: 26, color: "#81D4FA" }} />,
 };
 
-const StatGroup = ({ data }) => {
-  return (<>
-      {data.map((item, index) => (
+const StatGroup = ({ type }) => {
+  const statData = useSelector((state) => state.stats.statData);
+  console.log("StatGroup statData", statData[type]);
+  return (
+    <>
+      {statData[type].map((item, index) => (
         <StatBox
           key={index}
           title={item.title}

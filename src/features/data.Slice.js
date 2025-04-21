@@ -49,8 +49,20 @@ const initialState = {
 export const dataSlice = createSlice({
   name: "data",
   initialState,
-  reducers: {},
+  reducers: {
+    setData: (state, action) => {
+      state.entries = action.payload;
+      state.isLoading = false;
+    },
+    setAirDataLoading: (state, action) => {
+      state.isLoading = action.payload;
+    },
+    setAirDataError: (state, action) => {
+      state.error = action.payload;
+      state.loading = false;
+    },
+  },
 });
 
-// export const { setData, clearData } = dataSlice.actions;
+export const { setData ,setAirDataLoading, setAirDataError } = dataSlice.actions;
 export default dataSlice.reducer;

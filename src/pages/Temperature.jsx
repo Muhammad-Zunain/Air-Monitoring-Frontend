@@ -6,7 +6,6 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { getStats } from "../features/selectors.js"; 
 import StatGroup from "../components/StatGroup";
 import CustomColumnMenu from "../components/DataGridCustomColumnMenu";
 import BreakdownChart from "../components/BreakdownChart";
@@ -18,7 +17,6 @@ const Temperature = () => {
 
   const theme = useTheme();
   const rows = useSelector((state) => state.data.entries);
-  const temperatureStats = useSelector(getStats("temperature"));
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
   const isLoading = false;
 
@@ -45,7 +43,7 @@ const Temperature = () => {
           "& > div": { gridColumn: isNonMediumScreens ? undefined : "span 12" },
         }}
       >
-        <StatGroup data={temperatureStats} />
+        <StatGroup type="temperature" />
 
         <Box
           mt="20px"

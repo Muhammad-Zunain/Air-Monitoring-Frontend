@@ -7,12 +7,10 @@ import OverviewChart from "../components/OverviewChart";
 import SectionHeader from "../components/SectionHeader";
 import StatGroup from "../components/StatGroup";
 import { useSelector } from "react-redux";
-import { getStats } from "../features/selectors.js";
 
 const Humidity = () => {
   const theme = useTheme();
   const rows = useSelector((state) => state.data.entries); 
-  const humidityStats = useSelector(getStats("humidity")); 
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
   const isLoading = false;
 
@@ -26,7 +24,7 @@ const Humidity = () => {
 
   return (
     <Box m="1.5rem 2.5rem">
-      <SectionHeader title="Humidity" subtitle="Real-time data" />
+      <SectionHeader title="Humidity" subtitle="Real-time data" />x
 
       <Box
         mt="20px"
@@ -39,7 +37,7 @@ const Humidity = () => {
           "& > div": { gridColumn: isNonMediumScreens ? undefined : "span 12" },
         }}
       >
-        <StatGroup data={humidityStats} /> {/* Pass the updated humidityStats */}
+        <StatGroup type="humidity" /> {/* Pass the updated humidityStats */}
 
         <Box
           mt="20px"

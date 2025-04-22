@@ -18,8 +18,8 @@ const iconMap = {
 };
 
 const StatGroup = ({ type }) => {
-  const statData = useSelector((state) => state.stats.statData);
-  console.log("StatGroup statData", statData[type]);
+  const statData = useSelector((state) => state.stats.statsData);
+  
   return (
     <>
       {statData[type].map((item, index) => (

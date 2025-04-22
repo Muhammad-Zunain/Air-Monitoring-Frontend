@@ -20,6 +20,7 @@ import { useSelector } from "react-redux";
 const OverviewChart = ({ title , yLabel , isDashboard }) => {
 
   const data = useSelector((state) => state.data.entries);
+  console.log("Data in OverviewChart:", data);
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);

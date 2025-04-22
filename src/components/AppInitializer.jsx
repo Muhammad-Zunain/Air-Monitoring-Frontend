@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useGetAllAirDataQuery, useGetAirStatsQuery } from "../state/api";
 import { useDispatch } from "react-redux";
-import { setData, setAirDataLoading, setAirDataError } from "../features/data.Slice";
+import {
+  setData,
+  setAirDataLoading,
+  setAirDataError,
+} from "../features/data.Slice";
 import { setAirStats, setLoading, setError } from "../features/airStat.Slice";
 import App from "../routes/App.jsx";
 
@@ -23,42 +27,52 @@ const AppInitializer = () => {
     isSuccess: airStatsSuccess,
   } = useGetAirStatsQuery();
 
-  console.log("Air Data:", airStatsSuccess);
-
+  // console.log("Air Data:",airData);
+  // console.log("Air Stats:",airStats);
   useEffect(() => {
-    if (!airDataLoading ) {
-      dispatch(setAirDataLoading(true));
-    } else {
+    if (airData) {
+      dispatch(setData(airData.data));
       dispatch(setAirDataLoading(false));
-      if (airData) dispatch(setData(airData));
-      if (airDataError) dispatch(setAirDataError(airDataError));
     }
-
-    if (!airStatsLoading) {
-      dispatch(setLoading(true));
-    } else {
+  
+    if (airDataError) {
+      dispatch(setAirDataError(airDataError));
+      dispatch(setAirDataLoading(false));
+    }
+  
+    if (airStats) {
+      console.log("✅ Air Stats received:", airStats);
+      dispatch(setAirStats(airStats.data));
       dispatch(setLoading(false));
-      if (airStats) dispatch(setAirStats(airStats));
-      if (airStatsError) dispatch(setError(airStatsError));
     }
-
-    // console.log("Air Data:", airDataLoading, airDataError);
-    // console.log("Air Stats:", airStatsLoading, airStatsError);
-
-    // Show App after both done
-    if (!airDataLoading && !airStatsLoading && airDataSuccess && airStatsSuccess) {
-      console.log("Air Data:");
+  
+    if (airStatsError) {
+      dispatch(setError(airStatsError));
+      dispatch(setLoading(false));
+    }
+  
+    // When all loading is done & both data fetches are successful
+    if (
+      !airDataLoading &&
+      !airStatsLoading &&
+      airDataSuccess &&
+      airStatsSuccess
+    ) {
+      console.log("🎉 All Data Fetched, Splash Done!");
       setSplashDone(true);
     }
   }, [
     airData,
     airStats,
-    airDataLoading,
-    airStatsLoading,
     airDataError,
     airStatsError,
+    airDataLoading,
+    airStatsLoading,
+    airDataSuccess,
+    airStatsSuccess,
     dispatch,
   ]);
+  
 
   if (!splashDone) {
     return (

@@ -17,12 +17,13 @@ const Temperature = () => {
 
   const theme = useTheme();
   const rows = useSelector((state) => state.data.entries);
+  console.log("Rows in Temperature:", rows);
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
   const isLoading = false;
 
   const columns = [
     { field: "_id", headerName: "ID", flex: 1 },
-    { field: "timestamp", headerName: "Time", flex: 1 },
+    { field: "time", headerName: "Time", flex: 1 },
     { field: "temperature", headerName: "Temperature (°C)", flex: 1 },
     { field: "humidity", headerName: "Humidity (%)", flex: 1 },
     { field: "dust", headerName: "Dust (mg/m³)", flex: 1 },

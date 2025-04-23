@@ -75,7 +75,6 @@ export const dataSlice = createSlice({
             date,
           };
         })
-        console.log("Converted Data:", converted);
         return { payload: converted };
       },
     },

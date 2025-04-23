@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
+import LoadingApp from "./LoadingApp.jsx";
 import { ResponsiveBar } from "@nivo/bar";
 import {
   useTheme,
@@ -9,76 +10,49 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
 import EventIcon from "@mui/icons-material/Event";
+import { setDataBarType, setLoading } from "../features/dataBarType.Slice.js";
+import { useGetAirDataByYearQuery } from "../state/api";
 
 const OverviewChart = ({ isDashboard }) => {
+  const dispatch = useDispatch();
   const theme = useTheme();
+  const { loading } = useSelector((state) => state.AvgData);
+  const { year, type } = useSelector((state) => state.AvgData.dataBarType);
+  const {
+    data: AirDataAvg,
+    isLoading,
+  } = useGetAirDataByYearQuery({ year, type });
 
-  // Sample temperature data
-  const data = {
-    2023: {
-      January: { temperature: "4.5" },
-      March: { temperature: "7.8" },
-      May: { temperature: "15.2" },
-      July: { temperature: "34.8" },
-      September: { temperature: "17.5" },
-      November: { temperature: "7.9" },
-    },
-    2024: {
-      January: { temperature: "5.3" },
-      March: { temperature: "8.7" },
-      May: { temperature: "16.0" },
-      July: { temperature: "35.5" },
-      September: { temperature: "18.7" },
-      November: { temperature: "8.3" },
-    },
-    2025: {
-      February: { temperature: "5.6" },
-      April: { temperature: "13.0" },
-      June: { temperature: "21.5" },
-      August: { temperature: "22.3" },
-      October: { temperature: "14.1" },
-      December: { temperature: "6.0" },
-    },
+  const [AvgMonthData, setAvgMonthData] = useState(null);
+
+  const MonthlyFilterData = (e) => {
+    const selectedYear = e.target.value;
+    dispatch(setDataBarType({ year: selectedYear, type }));
   };
 
-  // Get list of available years from data
-  const availableYears = Object.keys(data);
+  useEffect(() => {
+    dispatch(setLoading(true));
+  }, [year, AirDataAvg]);
 
-  // Set default year to current year if available, else first year in data
-  const currentYear = new Date().getFullYear().toString();
-  const defaultYear = availableYears.includes(currentYear)
-    ? currentYear
-    : availableYears[0];
+  useEffect(() => {
+    if (!isLoading && AirDataAvg.data) {
+      const isSame =
+        JSON.stringify(AirDataAvg.data) === JSON.stringify(AvgMonthData);
+      console.log("AirDataAvg.data:", isSame);
+      if (!isSame) {
+        setAvgMonthData(AirDataAvg.data.monthlyAverages);
+        dispatch(setLoading(false));
+      }
+    }
+  }, [AirDataAvg]);
 
-  const [selectedYear, setSelectedYear] = useState(defaultYear);
-
-  // List of all months
-  const allMonths = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  // Format chart data (fill missing months with 0)
-  const chartData = useMemo(() => {
-    const yearData = data[selectedYear] || {};
-    return allMonths.map((month) => ({
-      month,
-      temperature: yearData[month]
-        ? parseFloat(yearData[month].temperature)
-        : 0,
-    }));
-  }, [selectedYear]);
+  const availableYears = ["2024", "2025"];
+  
+  if (loading) {
+    return <LoadingApp />;
+  }
 
   return (
     <>
@@ -104,12 +78,8 @@ const OverviewChart = ({ isDashboard }) => {
               fontWeight: 500,
               fontSize: 14,
               color: theme.palette.text.primary,
-              "& fieldset": {
-                borderColor: theme.palette.divider,
-              },
-              "&:hover fieldset": {
-                borderColor: theme.palette.primary.main,
-              },
+              "& fieldset": { borderColor: theme.palette.divider },
+              "&:hover fieldset": { borderColor: theme.palette.primary.main },
               "&.Mui-focused fieldset": {
                 borderColor: theme.palette.primary.main,
               },
@@ -117,17 +87,14 @@ const OverviewChart = ({ isDashboard }) => {
           }}
         >
           <InputLabel
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: 16,
-            }}
+            sx={{ color: theme.palette.text.secondary, fontSize: 16 }}
           >
             Year
           </InputLabel>
           <Select
             label="Year"
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
+            value={year}
+            onChange={MonthlyFilterData}
             IconComponent={EventIcon}
             MenuProps={{
               PaperProps: {
@@ -150,18 +117,17 @@ const OverviewChart = ({ isDashboard }) => {
               },
             }}
           >
-            {availableYears.map((year) => (
-              <MenuItem key={year} value={year}>
-                {year}
+            {availableYears.map((yearOption) => (
+              <MenuItem key={yearOption} value={yearOption}>
+                {yearOption}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
       </Box>
 
-      {/* Bar Chart */}
       <ResponsiveBar
-        data={chartData}
+        data={AvgMonthData}
         keys={["temperature"]}
         indexBy="month"
         layout="vertical"

@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import {
   Box,
   Button,
@@ -11,83 +12,24 @@ import FlexBetween from "../components/FlexBetween";
 import Header from "../components/Header";
 import {
   DownloadOutlined,
-  PointOfSale,
-  PersonAdd,
-  Traffic,
+  ThermostatOutlined,
+  AirOutlined,
+  OpacityOutlined,
 } from "@mui/icons-material";
 import StatBox from "../components/StatBox";
 import CustomColumnMenu from "../components/DataGridCustomColumnMenu";
-import BreakdownChart from "../components/BreakdownChart";
-import OverviewChart from "../components/OverviewChart";
 
 const Dashboard = () => {
-  const data = {
-    "12:00 AM": { temperature: "25.3", humidity: "60.5", dust: "5.2" },
-    "12:30 AM": { temperature: "24.8", humidity: "59.8", dust: "4.9" },
-    "1:00 AM": { temperature: "26.0", humidity: "58.3", dust: "5.1" },
-    "1:30 AM": { temperature: "24.5", humidity: "60.2", dust: "4.7" },
-    "2:00 AM": { temperature: "25.7", humidity: "61.1", dust: "5.0" },
-    "2:30 AM": { temperature: "24.9", humidity: "59.0", dust: "4.8" },
-    "3:00 AM": { temperature: "25.5", humidity: "58.7", dust: "4.6" },
-    "3:30 AM": { temperature: "24.3", humidity: "60.3", dust: "5.2" },
-    "4:00 AM": { temperature: "26.1", humidity: "61.5", dust: "5.0" },
-    "4:30 AM": { temperature: "25.8", humidity: "59.9", dust: "4.9" },
-    "5:00 AM": { temperature: "24.7", humidity: "60.1", dust: "5.3" },
-    "5:30 AM": { temperature: "25.2", humidity: "59.3", dust: "4.7" },
-    "6:00 AM": { temperature: "24.6", humidity: "60.4", dust: "5.0" },
-    "6:30 AM": { temperature: "25.3", humidity: "58.8", dust: "4.9" },
-    "7:00 AM": { temperature: "26.0", humidity: "59.5", dust: "5.1" },
-    "7:30 AM": { temperature: "24.4", humidity: "60.2", dust: "4.8" },
-    "8:00 AM": { temperature: "25.1", humidity: "59.0", dust: "5.0" },
-    "8:30 AM": { temperature: "24.9", humidity: "58.6", dust: "4.7" },
-    "9:00 AM": { temperature: "26.2", humidity: "60.3", dust: "5.3" },
-    "9:30 AM": { temperature: "25.4", humidity: "59.8", dust: "5.0" },
-    "10:00 AM": { temperature: "24.7", humidity: "59.9", dust: "4.6" },
-    "10:30 AM": { temperature: "25.6", humidity: "60.1", dust: "4.8" },
-    "11:00 AM": { temperature: "26.1", humidity: "60.4", dust: "5.0" },
-    "11:30 AM": { temperature: "25.8", humidity: "59.3", dust: "4.9" },
-    "12:00 PM": { temperature: "24.5", humidity: "60.2", dust: "5.1" },
-    "12:30 PM": { temperature: "25.7", humidity: "61.1", dust: "5.0" },
-    "1:00 PM": { temperature: "24.8", humidity: "59.4", dust: "4.8" },
-    "1:30 PM": { temperature: "25.2", humidity: "58.9", dust: "4.9" },
-    "2:00 PM": { temperature: "25.9", humidity: "60.0", dust: "5.2" },
-    "2:30 PM": { temperature: "24.3", humidity: "59.7", dust: "4.7" },
-    "3:00 PM": { temperature: "25.6", humidity: "60.5", dust: "5.1" },
-    "3:30 PM": { temperature: "24.7", humidity: "59.8", dust: "4.6" },
-    "4:00 PM": { temperature: "26.0", humidity: "60.6", dust: "5.0" },
-    "4:30 PM": { temperature: "25.3", humidity: "58.8", dust: "4.9" },
-    "5:00 PM": { temperature: "24.6", humidity: "60.2", dust: "5.1" },
-    "5:30 PM": { temperature: "25.5", humidity: "59.6", dust: "4.7" },
-    "6:00 PM": { temperature: "24.8", humidity: "60.0", dust: "5.2" },
-    "6:30 PM": { temperature: "25.1", humidity: "59.4", dust: "4.9" },
-    "7:00 PM": { temperature: "26.3", humidity: "60.5", dust: "5.0" },
-    "7:30 PM": { temperature: "24.9", humidity: "59.2", dust: "4.8" },
-    "8:00 PM": { temperature: "25.2", humidity: "60.4", dust: "4.9" },
-    "8:30 PM": { temperature: "24.5", humidity: "59.9", dust: "5.1" },
-    "9:00 PM": { temperature: "25.8", humidity: "60.3", dust: "4.7" },
-    "9:30 PM": { temperature: "24.4", humidity: "58.9", dust: "4.6" },
-    "10:00 PM": { temperature: "26.0", humidity: "60.2", dust: "5.2" },
-    "10:30 PM": { temperature: "25.3", humidity: "59.5", dust: "4.8" },
-    "11:00 PM": { temperature: "24.7", humidity: "60.0", dust: "5.1" },
-    "11:30 PM": { temperature: "25.6", humidity: "59.8", dust: "4.9" },
-    // Add more records as needed for 100 total
-  };
-
-  const rows = Object.entries(data).map(([time, values], index) => ({
-    _id: index + 1,
-    timestamp: time,
-    temperature: values.temperature,
-    humidity: values.humidity,
-    dust: values.dust,
-  }));
-
   const theme = useTheme();
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
+  const rows = useSelector((state) => state.data.entries);
+  const statData = useSelector((state) => state.stats.statsData);
   const isLoading = false;
 
   const columns = [
     { field: "_id", headerName: "ID", flex: 1 },
-    { field: "timestamp", headerName: "Time", flex: 1 },
+    { field: "time", headerName: "Time", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
     { field: "temperature", headerName: "Temperature (°C)", flex: 1 },
     { field: "humidity", headerName: "Humidity (%)", flex: 1 },
     { field: "dust", headerName: "Dust (mg/m³)", flex: 1 },
@@ -96,7 +38,11 @@ const Dashboard = () => {
   return (
     <Box m="1.5rem 2.5rem">
       <FlexBetween>
-        <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+        <Header
+          title="DASHBOARD"
+          subtitle="Welcome to Air Monitoring dashboard"
+          isDashboard={true}
+        />
         <Box>
           <Button
             sx={{
@@ -125,43 +71,31 @@ const Dashboard = () => {
         }}
       >
         <StatBox
-          title="Temperature"
-          value="34°C "
-          increase="+4%"
-          description="Since last month"
-          icon={
-            <PointOfSale
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
-            />
-          }
+          title={statData.temperature[0].title}
+          value={`${statData.temperature[0].value}°C`}
+          increase={statData.temperature[0].increase}
+          description={statData.temperature[0].description}
+          icon={<ThermostatOutlined sx={{ fontSize: 26, color: "#FFA726" }} />}
         />
         <StatBox
-          title="Humidity"
-          value="60%"
-          increase="+2%"
-          description="Since last month"
-          icon={
-            <PointOfSale
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
-            />
-          }
+          title={statData.humidity[0].title}
+          value={`${statData.humidity[0].value}%`}
+          increase={statData.humidity[0].increase}
+          description={statData.humidity[0].description}
+          icon={<OpacityOutlined sx={{ fontSize: 26, color: "#4FC3F7" }} />}
         />
-<StatBox
-          title="Dust"
-          value="0.5 mg/m³"
-          increase="+1%"
-          description="Since last month"
-          icon={
-            <PersonAdd
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
-            />
-          }
+        <StatBox
+          title={statData.dust[0].title}
+          value={`${statData.dust[0].value}mg/m³`}
+          increase={statData.dust[0].increase}
+          description={statData.dust[0].description}
+          icon={<AirOutlined sx={{ fontSize: 26, color: "#9E9D24" }} />}
         />
         <Box
           mt="20px"
-          mb="20px"
+          mb="60px"
           gridColumn="span 12"
-          gridRow="span 3"
+          gridRow="span 4"
           sx={{
             "& .MuiDataGrid-root": { border: "none" },
             "& .MuiDataGrid-cell": { borderBottom: "none" },
@@ -183,8 +117,11 @@ const Dashboard = () => {
             },
           }}
         >
-
-          <Typography variant="h3" fontWeight="bold" sx={{ color: theme.palette.secondary[100] }}>
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            sx={{ color: theme.palette.secondary[100] }}
+          >
             Real-time Data
           </Typography>
 
@@ -195,33 +132,6 @@ const Dashboard = () => {
             columns={columns}
             components={{ ColumnMenu: CustomColumnMenu }}
           />
-        </Box>
-        <Box
-        mt="20px"
-          gridColumn="span 12"
-          gridRow="span 4"
-          backgroundColor={theme.palette.background.alt}
-          p="1rem"
-          borderRadius="0.55rem"
-        >
-          <OverviewChart view="sales" isDashboard={true} />
-        </Box>
-
-        
-
-        
-
-        <Box
-          mt="20px"
-          mb="20px"
-          gridColumn="span 12"
-          gridRow="span 4"
-          backgroundColor={theme.palette.background.alt}
-          p="1.5rem"
-          borderRadius="0.55rem"
-        >
-          <BreakdownChart isDashboard={true} />
-          
         </Box>
       </Box>
     </Box>

@@ -4,20 +4,21 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:2000/api/air-monitoring" }),
-  tagTypes: ["AirData", "AirStats"], 
+  tagTypes: ["AirData", "AirStats", "AirDataByYear"], 
   endpoints: (builder) => ({
     getAllAirData: builder.query({
       query: () => "/get-air-data/",
       providesTags: ["AirData"],
     }),
     getAirDataByYear: builder.query({
-      query: (year) => `/filter-by-year/${year}`,
-      providesTags: ["AirData"],
+      query: ({ year, type }) => `/get-monthly-averages?year=${year}&type=${type}`,
+      providesTags: ["AirDataByYear"],
     }),
     getAirStats: builder.query({
       query: () => `/get-stat-data/`, 
       providesTags: ["AirStats"],
     }),
+    
   }),
 });
 

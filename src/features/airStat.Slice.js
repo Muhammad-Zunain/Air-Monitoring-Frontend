@@ -29,7 +29,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   statsData: {},
-  loading: false,
+  loading: true,
   error: null,
 };
 
@@ -39,7 +39,6 @@ const airStatsSlice = createSlice({
   reducers: {
     setAirStats: (state, action) => {
       state.statsData = action.payload;
-      console.log("Air Stats:1314", action.payload);
       state.loading = false;
       state.error = null;
     },

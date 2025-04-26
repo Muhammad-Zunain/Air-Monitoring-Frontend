@@ -1,33 +1,51 @@
 import React, { useState } from "react";
-import { Box, useMediaQuery } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
 import Navbar from "../../components/Navbar.jsx";
-import Sidebar from "../../components/Sidebar.jsx";
-// import { useGetUserQuery } from "state/api";
+import Sidebar from "../../components/Sidebar.jsx"
 
 const Layout = () => {
-  const isNonMobile = useMediaQuery("(min-width: 600px)");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const userId = useSelector((state) => state.global.userId);
-  // const { data } = useGetUserQuery(userId);
-
+  const theme = useTheme();
+  const isNonMobile = useMediaQuery(theme.breakpoints.up("sm"));
+  const [isSidebarOpen, setIsSidebarOpen] = useState(isNonMobile);
+  const drawerWidth = 250;
+  
   return (
-    <Box display={isNonMobile ? "flex" : "block"} width="100%" height="100%">
+    <Box display="flex" width="100%" height="100%">
       <Sidebar
-        user={ {}}
-        isNonMobile={isNonMobile}
-        drawerWidth="250px"
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        drawerWidth={drawerWidth}
       />
-      <Box flexGrow={1}>
+      
+      <Box 
+        component="main" 
+        sx={{
+          flexGrow: 1,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          marginLeft: { sm: isSidebarOpen ? `${drawerWidth}px` : 0 },
+          transition: theme.transitions.create(['margin', 'width'], {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+        }}
+      >
         <Navbar
-          user={ {}}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
-        <Outlet />
+        
+        {/* This creates space so content isn't hidden behind navbar */}
+        <Box sx={{ height: "64px" }} />
+        
+        <Box 
+          sx={{ 
+            minHeight: "calc(100vh - 64px)", // Full height minus navbar
+            backgroundColor: theme.palette.background.default
+          }}
+        >
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

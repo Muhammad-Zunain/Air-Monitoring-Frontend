@@ -24,12 +24,16 @@
     "@nivo/pie": "^0.88.0",
     "@reduxjs/toolkit": "^2.7.0",
     "@tailwindcss/vite": "^4.1.4",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.9.1",
     "lottie-react": "^2.4.1",
+    "lucide-react": "^0.503.0",
     "react": "^18.3.1",
     "react-datepicker": "^8.3.0",
     "react-dom": "^18.3.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.1",
+    "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.4"
   },
   "devDependencies": {

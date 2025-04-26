@@ -8,9 +8,10 @@ import {
 } from "../features/data.Slice";
 import { setAirStats, setLoading, setError } from "../features/airStat.Slice";
 import App from "../routes/App.jsx";
+import SplashScreen from "./SplashScreen.jsx";
 
 const AppInitializer = () => {
-  const [splashDone, setSplashDone] = useState(false);
+  const [showSplashScreen, setShowSplashScreen] = useState(true); 
   const dispatch = useDispatch();
 
   const {
@@ -27,39 +28,36 @@ const AppInitializer = () => {
     isSuccess: airStatsSuccess,
   } = useGetAirStatsQuery();
 
-  // console.log("Air Data:",airData);
-  // console.log("Air Stats:",airStats);
   useEffect(() => {
     if (airData) {
       dispatch(setData(airData.data));
       dispatch(setAirDataLoading(false));
     }
-  
+
     if (airDataError) {
       dispatch(setAirDataError(airDataError));
       dispatch(setAirDataLoading(false));
     }
-  
+
     if (airStats) {
-      console.log("✅ Air Stats received:", airStats);
       dispatch(setAirStats(airStats.data));
       dispatch(setLoading(false));
     }
-  
+
     if (airStatsError) {
       dispatch(setError(airStatsError));
       dispatch(setLoading(false));
     }
-  
-    // When all loading is done & both data fetches are successful
+
     if (
       !airDataLoading &&
       !airStatsLoading &&
       airDataSuccess &&
       airStatsSuccess
     ) {
-      console.log("🎉 All Data Fetched, Splash Done!");
-      setSplashDone(true);
+      setTimeout(() => {
+        setShowSplashScreen(false);
+      }, 5000);
     }
   }, [
     airData,
@@ -72,12 +70,15 @@ const AppInitializer = () => {
     airStatsSuccess,
     dispatch,
   ]);
-  
 
-  if (!splashDone) {
+  if (showSplashScreen) {
     return (
       <div className="flex justify-center items-center h-screen text-xl font-semibold">
-        {airDataError || airStatsError ? "Error loading data" : "Loading..."}
+        {airDataError || airStatsError ? (
+          "Error loading data"
+        ) : (
+          <SplashScreen  />
+        )}
       </div>
     );
   }

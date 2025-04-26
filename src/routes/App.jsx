@@ -10,6 +10,8 @@ import Geography from "../pages/Geography.jsx";
 import Humidity from "../pages/Humidity.jsx";
 import Dust from "../pages/Dust.jsx";
 import Temperature from "../pages/Temperature.jsx";
+import Setting from  "../pages/ESPSetting.jsx"
+
 
 function App() {
   const mode = useSelector((state) => state.global.mode);
@@ -32,6 +34,7 @@ function App() {
                 <Route path="/temperature" element={<Temperature />} />
                 <Route path="/humidity" element={<Humidity />} />
                 <Route path="/dust" element={<Dust />} />
+                <Route path="/setting" element={<Setting/>} />
               </Route>
             </Routes>
           </ThemeProvider>

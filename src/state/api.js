@@ -17,6 +17,9 @@ export const api = createApi({
     getAirStats: builder.query({
       query: () => `/get-stat-data/`, 
       providesTags: ["AirStats"],
+    }), 
+    getAverages: builder.query({
+      query: ({ from, to }) => `/get-data-time-range?from=${from}&to=${to}`,
     }),
     
   }),
@@ -26,4 +29,5 @@ export const {
   useGetAllAirDataQuery,
   useGetAirDataByYearQuery,
   useGetAirStatsQuery,
+  useGetAveragesQuery,
 } = api;

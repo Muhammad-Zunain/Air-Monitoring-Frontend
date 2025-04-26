@@ -5,74 +5,107 @@ import {
   Menu,
   MenuItem,
   FormControl,
-  CircularProgress,
   TextField,
   Box,
   Typography,
 } from "@mui/material";
 import { FilterList } from "@mui/icons-material";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useTheme } from "@mui/material/styles";
-import { useSelector } from "react-redux";
+import { useGetAveragesQuery } from "../state/api";
+import LoadingApp from "./LoadingApp.jsx";
 
-const OverviewChart = ({ title , yLabel , isDashboard }) => {
-
-  const data = useSelector((state) => state.data.entries);
+// Check valid range (about 24h difference)
+const OverviewChart = ({
+  title,
+  yLabel,
+  isDashboard,
+  isMobile,
+  isSmallMobile,
+}) => {
   const theme = useTheme();
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  // const maxValue = useMemo(() => {
-  //   return Math.max(...data.map((item) => item[yLabel.toLowerCase()] ?? 0));
-  // }, [data, yLabel]);
+  // Set default from: today at 00:00, to: today at 23:59
+  const now = new Date();
+  const startOfDay = new Date(now);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(now);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const [fromTime, setFromTime] = useState(startOfDay);
+  const [toTime, setToTime] = useState(endOfDay);
+
+  const [dateError, setDateError] = useState("");
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+
+  const isValidRange =
+    fromTime &&
+    toTime &&
+    Math.abs(toTime - fromTime) >= 23.9 * 60 * 60 * 1000 &&
+    Math.abs(toTime - fromTime) <= 24.1 * 60 * 60 * 1000;
+
+  const { data: apiData, isLoading } = useGetAveragesQuery(
+    {
+      from: fromTime?.toISOString(),
+      to: toTime?.toISOString(),
+    },
+    {
+      skip: !isValidRange,
+    }
+  );
+
+  const handleFilterClick = (event) => setFilterAnchorEl(event.currentTarget);
+  const handleFilterClose = () => setFilterAnchorEl(null);
+
+  const handleFromTimeChange = (date) => {
+    setFromTime(date);
+    setDateError("");
+  };
+
+  const handleToTimeChange = (date) => {
+    setToTime(date);
+    if (fromTime && date) {
+      const diffHours = Math.abs((date - fromTime) / (1000 * 60 * 60));
+      if (diffHours >= 23.9 && diffHours <= 24.1) {
+        setDateError("");
+        handleFilterClose();
+      } else {
+        setDateError("Time range must be exactly 24 hours.");
+      }
+    }
+  };
 
   const chartData = useMemo(() => {
-    if (!data || !Array.isArray(data)) return [];
+    if (!apiData) return [];
 
-    const selectedDateStr = selectedDate
-      ? new Date(selectedDate).toLocaleDateString("en-CA")
-      : null;
-
-    const filtered = selectedDateStr
-      ? data.filter((item) => item.date === selectedDateStr)
-      : data;
-
-    const sorted = [...filtered].sort(
-      (a, b) => new Date(`1970-01-01T${a.time}`) - new Date(`1970-01-01T${b.time}`)
-    );
+    const data = apiData
+      .filter(
+        (item) => item.timeRange && item[yLabel.toLowerCase()] !== undefined
+      )
+      .map((item) => ({
+        x: item.timeRange,
+        y: item[yLabel.toLowerCase()],
+      }));
 
     return [
       {
         id: yLabel,
-        color: theme.palette.secondary.main,
-        data: sorted.map((item) => ({
-          x: item.time,
-          y: item[yLabel.toLowerCase()],
-        })),
+        data,
       },
     ];
-  }, [data, selectedDate, theme, yLabel]);
-
-  const handleFilterClick = (event) => {
-    setFilterAnchorEl(event.currentTarget);
-  };
-
-  const handleFilterClose = () => {
-    setFilterAnchorEl(null);
-  };
-
-  const handleDateChange = (newDate) => {
-    setSelectedDate(newDate);
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1000);
-  };
+  }, [apiData, yLabel]);
 
   return (
     <Box sx={{ position: "relative", px: 1, py: 2 }}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ px: 2 }}>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 2 }}
+      >
         <Box display="flex" alignItems="center">
           <Typography variant="h4" fontWeight="bold" sx={{ mr: 1 }}>
             {title}
@@ -89,27 +122,69 @@ const OverviewChart = ({ title , yLabel , isDashboard }) => {
         onClose={handleFilterClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
+        PaperProps={{
+          sx: {
+            p: 2,
+            width: 320,
+            borderRadius: 2,
+            boxShadow: 3,
+          },
+        }}
       >
-        <MenuItem>
-          <FormControl fullWidth>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
-                label="Select Date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                renderInput={(params) => <TextField {...params} size="small" />}
-              />
-            </LocalizationProvider>
-          </FormControl>
-        </MenuItem>
+        <Typography variant="h6" sx={{ px: 1, mb: 1 }}>
+          Select Time Range
+        </Typography>
+
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <DateTimePicker
+              label="From"
+              value={fromTime}
+              onChange={handleFromTimeChange}
+              renderInput={(params) => (
+                <TextField {...params} size="small" fullWidth />
+              )}
+            />
+            <DateTimePicker
+              label="To"
+              value={toTime}
+              onChange={handleToTimeChange}
+              renderInput={(params) => (
+                <TextField {...params} size="small" fullWidth />
+              )}
+            />
+            {dateError && (
+              <Typography color="error" variant="body2" sx={{ px: 1 }}>
+                {dateError}
+              </Typography>
+            )}
+            <Box display="flex" justifyContent="flex-end" mt={1}>
+              <IconButton
+                onClick={handleFilterClose}
+                disabled={Boolean(dateError)}
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: theme.palette.primary.main,
+                  color: "white",
+                  borderRadius: 1,
+                  fontSize: 14,
+                  "&:hover": {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                }}
+              >
+                Apply
+              </IconButton>
+            </Box>
+          </Box>
+        </LocalizationProvider>
       </Menu>
 
-      {loading ? (
-        <Box textAlign="center" mt={40}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Box height={550}>
+      {isLoading ? (
+        <LoadingApp />
+      ) : apiData && apiData.length > 0 ? (
+        <Box >
           <ResponsiveLine
             data={chartData}
             theme={{
@@ -191,6 +266,33 @@ const OverviewChart = ({ title , yLabel , isDashboard }) => {
               },
             ]}
           />
+        </Box>
+      ) : (
+        <Box
+        sx={{
+          width: "100%",
+          minHeight: {
+            xs: "250px",  // small screens
+            sm: "300px",  // tablets
+            md: "400px",  // desktops
+          }
+        }}
+          width="100%"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Typography
+            variant="h5"
+            fontWeight="500"
+            bgcolor={theme.palette.primary[400]}
+            borderRadius="10px"
+            boxShadow={3}
+            p={3}
+            textAlign="center"
+          >
+            No data available.
+          </Typography>
         </Box>
       )}
     </Box>

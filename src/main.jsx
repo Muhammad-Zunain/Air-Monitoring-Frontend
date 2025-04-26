@@ -10,7 +10,6 @@ import "./index.css";
 import dataReducer from "./features/data.Slice.js"; 
 import statDataReducer from "./features/airStat.Slice.js"; 
 import globalReducer from "./features/index.js";
-import dataBarTypeReducer from "./features/dataBarType.Slice.js";
 import { api } from './state/api'; 
 import AppInitializer from "./components/AppInitializer.jsx";
 
@@ -19,7 +18,6 @@ const store = configureStore({
     global: globalReducer,
     data: dataReducer,
     stats: statDataReducer,
-    AvgData: dataBarTypeReducer,
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefault) => getDefault().concat(api.middleware),

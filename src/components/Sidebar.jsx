@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
-  Divider,
   Drawer,
   IconButton,
   List,
@@ -11,39 +10,36 @@ import {
   ListItemText,
   Typography,
   useTheme,
+  Divider,
+  useMediaQuery
 } from "@mui/material";
 import {
   ChevronLeft,
   ChevronRightOutlined,
-  HomeOutlined,
+  DashboardOutlined,
   ThermostatOutlined,
   WaterDropOutlined,
   AirOutlined,
   PublicOutlined,
   TodayOutlined,
-  CalendarMonthOutlined,
+  CalendarMonthOutlined
 } from "@mui/icons-material";
-import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import FlexBetween from "./FlexBetween";
-import { useDispatch } from "react-redux";
-import { setDataBarType } from "../features/dataBarType.Slice.js";
+import { motion } from "framer-motion";
 
 const navItems = [
   {
     text: "Dashboard",
-    icon: <HomeOutlined />,
+    icon: <DashboardOutlined />,
   },
   {
     text: "Temperature",
     icon: <ThermostatOutlined />,
   },
-
   {
     text: "Humidity",
     icon: <WaterDropOutlined />,
   },
-
   {
     text: "Dust",
     icon: <AirOutlined />
@@ -60,121 +56,210 @@ const navItems = [
     text: "Monthly",
     icon: <CalendarMonthOutlined />,
   },
-  
-  
 ];
 
 const Sidebar = ({
-  drawerWidth,
+  drawerWidth = 250,
   isSidebarOpen,
   setIsSidebarOpen,
-  isNonMobile,
 }) => {
-  const dispatch = useDispatch();
   const { pathname } = useLocation();
   const [active, setActive] = useState("");
   const navigate = useNavigate();
   const theme = useTheme();
+  const isNonMobile = useMediaQuery(theme.breakpoints.up("sm"));
 
   useEffect(() => {
-    setActive(pathname.substring(1));
+    setActive(pathname.substring(1) || "dashboard");
   }, [pathname]);
 
-
-  const getData = (text) => {
-    const currentYear = new Date().getFullYear();
-    dispatch(setDataBarType({year:currentYear, type:text})); 
-  }
-    
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0 }
+  };
 
   return (
-    <Box component="nav">
-      {isSidebarOpen && (
-        <Drawer
-          open={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-          variant="persistent"
-          anchor="left"
-          sx={{
+    <Box 
+      component="nav" 
+      sx={{
+        width: isSidebarOpen ? drawerWidth : 0,
+        flexShrink: 0,
+        height: "100%",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        zIndex: theme.zIndex.drawer,
+      }}
+    >
+      <Drawer
+        open={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        variant={isNonMobile ? "persistent" : "temporary"}
+        anchor="left"
+        sx={{
+          '& .MuiDrawer-paper': {
             width: drawerWidth,
-            "& .MuiDrawer-paper": {
-              color: theme.palette.secondary[200],
-              backgroundColor: theme.palette.background.alt,
-              boxSixing: "border-box",
-              borderWidth: isNonMobile ? 0 : "2px",
-              width: drawerWidth,
-            },
-          }}
-        >
-          <Box width="100%">
-            <Box m="1.5rem 2rem 2rem 3rem">
-              <FlexBetween color={theme.palette.secondary.main}>
-                <Box display="flex" alignItems="center" gap="0.5rem">
-                  <Typography variant="h4" fontWeight="bold">
-                    ECOMVISION
-                  </Typography>
-                </Box>
-                {!isNonMobile && (
-                  <IconButton onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-                    <ChevronLeft />
-                  </IconButton>
-                )}
-              </FlexBetween>
-            </Box>
-            <List>
-              {navItems.map(({ text, icon }) => {
-                if (!icon) {
-                  return (
-                    <Typography key={text} sx={{ m: "2.25rem 0 1rem 3rem" }} >
-                      {text}
-                    </Typography>
-                  );
-                }
-                const lcText = text.toLowerCase();
+            boxSizing: 'border-box',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            borderRight: 'none',
+            // darl light mode set karo na backgroung mai
 
-                return (
-                  <ListItem key={text} disablePadding>
-                    <ListItemButton
-                      onClick={() => {
-                        navigate(`/${lcText}`);
-                        setActive(lcText)
-                        getData(lcText);
-                      }}
+            backgroundColor:theme.palette.background.default, 
+            color: 'white',
+            height: '100%',
+            overflow: 'hidden',
+            transition: theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            '&:hover': {
+              overflow: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                borderRadius: '6px',
+              }
+            }
+          },
+        }}
+      >
+        <Box width="100%" sx={{ position: 'relative' }}>
+          <Box
+            p="3rem 1rem"
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              color: "#ffd166" // Matching ECOMVISION bright blue text
+            }}
+          >
+            <Typography
+              mr={2}
+              variant="h4"
+              fontWeight="bold"
+              component={motion.div}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              AIR MONITORING 
+            </Typography>
+            {!isNonMobile && (
+              <IconButton
+                onClick={() => setIsSidebarOpen(false)}
+                sx={{
+                  position: 'absolute',
+                  right: '5px',
+                  
+                  color: 'white',
+                }}
+              >
+                <ChevronLeft />
+              </IconButton>
+            )}
+          </Box>
+          
+
+          <List sx={{ pt: 1, pb: 8 }}>
+            {navItems.map(({ text, icon }, index) => {
+              const lcText = text.toLowerCase();
+              const isActive = active === lcText;
+
+              return (
+                <ListItem 
+                  key={text} 
+                  disablePadding 
+                  sx={{ 
+                    mb: 0.5,
+                    padding: '0 10px',
+                  }}
+                  component={motion.li}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <ListItemButton
+                    onClick={() => {
+                      navigate(`/${lcText}`);
+                      setActive(lcText);
+                      if (!isNonMobile) setIsSidebarOpen(false);
+                    }}
+                    sx={{
+                      borderRadius: '8px',
+                      py: 1.2,
+                      px: 2,
+                      backgroundColor: isActive ? 'rgba(255, 209, 102, 0.4)' : 'transparent', // Green background for active
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: isActive 
+                          ? 'rgba(255, 209, 102, 0.6)' 
+                          : 'rgba(255, 255, 255, 0.08)',
+                        '& .MuiListItemIcon-root': {
+                          color: isActive ? '#fff' : '#ffd166'
+                        }
+                      },
+                      '&::before': isActive ? {
+                        content: '""',
+                        position: 'absolute',
+                        left: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '4px',
+                        height: '70%',
+                        backgroundColor: '#ffd166',
+                        borderRadius: '0 4px 4px 0'
+                      } : {}
+                    }}
+                  >
+                    <ListItemIcon
                       sx={{
-                        backgroundColor:
-                          active === lcText
-                            ? theme.palette.secondary[300]
-                            : "transparent",
-                        color:
-                          active === lcText
-                            ? theme.palette.primary[600]
-                            : theme.palette.secondary[100],
+                        minWidth: 0,
+                        mr: 3,
+                        color: isActive ? '#fff' : 'rgba(255,255,255,0.7)',
                       }}
                     >
-                      <ListItemIcon
-                        sx={{
-                          ml: "2rem",
-                          color:
-                            active === lcText
-                              ? theme.palette.primary[600]
-                              : theme.palette.secondary[200],
+                      <Box 
+                        component={motion.div}
+                        whileHover={{ 
+                          scale: 1.2,
+                          transition: { duration: 0.2 }
                         }}
                       >
                         {icon}
-                      </ListItemIcon>
-                      <ListItemText primary={text} />
-                      {active === lcText && (
-                        <ChevronRightOutlined sx={{ ml: "auto" }} />
-                      )}
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
-            </List>
-          </Box>
-
-        </Drawer>
-      )}
+                      </Box>
+                    </ListItemIcon>
+                    
+                    <ListItemText 
+                      primary={text} 
+                      primaryTypographyProps={{
+                        fontSize: "16px",
+                        fontWeight: isActive ? "600" : "400",
+                        color: isActive ? "#fff" : "rgba(255,255,255,0.85)",
+                      }}
+                    />
+                    
+                    {isActive && (
+                      <ChevronRightOutlined 
+                        sx={{ 
+                          ml: "auto",
+                          color: "#fff"
+                        }} 
+                      />
+                    )}
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+          
+          
+        </Box>
+      </Drawer>
     </Box>
   );
 };

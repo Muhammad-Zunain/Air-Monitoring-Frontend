@@ -24,7 +24,7 @@ import {
   ErrorOutline
 } from "@mui/icons-material";
 import SectionHeader from "../components/SectionHeader";
-
+import { useUploadFirmwareMutation } from '../state/api';
 // You would replace these with actual API calls
 const mockToggleDevice = (state) => {
   return new Promise((resolve) => {
@@ -138,62 +138,66 @@ const Setting = () => {
     }
   };
 
-  const handleUpload = async () => {
-    if (!uploadStatus.file) return;
-    
-    setUploadStatus(prev => ({ ...prev, isUploading: true, progress: 0, success: false }));
-    
-    try {
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadStatus(prev => ({
-          ...prev,
-          progress: Math.min(prev.progress + 10, 90)
-        }));
-      }, 300);
-      
-      await mockUploadFirmware(uploadStatus.file);
-      
-      clearInterval(progressInterval);
-      
-      setUploadStatus({
-        file: null,
-        isUploading: false,
-        progress: 100,
-        error: null,
-        success: true
-      });
-      
-      setAlertState({
-        open: true,
-        message: "Firmware uploaded successfully",
-        severity: "success"
-      });
-      
-      // Reset file input
-      document.getElementById('firmware-upload').value = '';
-      
-      // Reset progress after showing 100%
-      setTimeout(() => {
-        setUploadStatus(prev => ({ ...prev, progress: 0 }));
-      }, 1500);
-      
-    } catch (error) {
+
+  const [uploadFirmware] = useUploadFirmwareMutation();
+
+const handleUpload = async () => {
+  if (!uploadStatus.file) return;
+
+  setUploadStatus(prev => ({ ...prev, isUploading: true, progress: 0, success: false }));
+
+  let progressInterval;
+
+  try {
+    progressInterval = setInterval(() => {
       setUploadStatus(prev => ({
         ...prev,
-        isUploading: false,
-        progress: 0,
-        error: error.message || "Upload failed",
-        success: false
+        progress: Math.min(prev.progress + 10, 90),
       }));
-      
-      setAlertState({
-        open: true,
-        message: error.message || "Failed to upload firmware",
-        severity: "error"
-      });
-    }
-  };
+    }, 300);
+
+    await uploadFirmware(uploadStatus.file).unwrap();
+
+    clearInterval(progressInterval);
+
+    setUploadStatus({
+      file: null,
+      isUploading: false,
+      progress: 100,
+      error: null,
+      success: true,
+    });
+
+    setAlertState({
+      open: true,
+      message: "Firmware uploaded successfully",
+      severity: "success",
+    });
+
+    document.getElementById('firmware-upload').value = '';
+
+    setTimeout(() => {
+      setUploadStatus(prev => ({ ...prev, progress: 0 }));
+    }, 1500);
+
+  } catch (error) {
+    clearInterval(progressInterval);
+
+    setUploadStatus(prev => ({
+      ...prev,
+      isUploading: false,
+      progress: 0,
+      error: error.data?.message || error.message || "Upload failed",
+      success: false,
+    }));
+
+    setAlertState({
+      open: true,
+      message: error.data?.message || error.message || "Failed to upload firmware",
+      severity: "error",
+    });
+  }
+};
 
   const refreshDeviceStatus = () => {
     setDeviceStatus(prev => ({ ...prev, isLoading: true }));

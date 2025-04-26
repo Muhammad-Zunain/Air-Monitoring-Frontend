@@ -26,6 +26,7 @@ const OverviewChart = ({ isDashboard }) => {
   const [loading, setLoading] = useState(true);
 
 
+console.log(selectedYear,selectedType )
   const {
     data: airDataAvg,
     isLoading,
@@ -40,6 +41,7 @@ const OverviewChart = ({ isDashboard }) => {
 
   useEffect(() => {
     if (!isLoading && airDataAvg?.data) {
+      console.log(airDataAvg.data.monthlyAverages)
       setAvgMonthData(airDataAvg.data.monthlyAverages);
       setLoading(false);
     }

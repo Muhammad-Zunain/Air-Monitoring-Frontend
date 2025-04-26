@@ -21,6 +21,20 @@ export const api = createApi({
     getAverages: builder.query({
       query: ({ from, to }) => `/get-data-time-range?from=${from}&to=${to}`,
     }),
+    uploadFirmware: builder.mutation({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return {
+          url: 'upload-bin-file',
+          method: 'POST',
+          body: formData,
+        };
+},
+}),
+
+
     
   }),
 });
@@ -30,4 +44,5 @@ export const {
   useGetAirDataByYearQuery,
   useGetAirStatsQuery,
   useGetAveragesQuery,
+  useUploadFirmwareMutation,
 } = api;

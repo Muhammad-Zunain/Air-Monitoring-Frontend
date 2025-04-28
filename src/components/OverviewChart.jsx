@@ -1,213 +1,298 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { ResponsiveLine } from "@nivo/line";
-import {
-  IconButton,
-  Menu,
-  MenuItem,
-  FormControl,
-  TextField,
-  Box,
-  Typography,
-} from "@mui/material";
-import { FilterList } from "@mui/icons-material";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { Box, Typography, useMediaQuery, Tooltip, IconButton, Paper } from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
 import { useTheme } from "@mui/material/styles";
-import { useGetAveragesQuery } from "../state/api";
+import { useGetHalfHourlyAveragesQuery } from "../state/api";
 import LoadingApp from "./LoadingApp.jsx";
+import { useLocation } from "react-router-dom";
 
-// Check valid range (about 24h difference)
 const OverviewChart = ({
   title,
   yLabel,
   isDashboard,
-  isMobile,
-  isSmallMobile,
 }) => {
   const theme = useTheme();
-
-  // Set default from: today at 00:00, to: today at 23:59
-  const now = new Date();
-  const startOfDay = new Date(now);
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const endOfDay = new Date(now);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const [fromTime, setFromTime] = useState(startOfDay);
-  const [toTime, setToTime] = useState(endOfDay);
-
-  const [dateError, setDateError] = useState("");
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-
-  const isValidRange =
-    fromTime &&
-    toTime &&
-    Math.abs(toTime - fromTime) >= 23.9 * 60 * 60 * 1000 &&
-    Math.abs(toTime - fromTime) <= 24.1 * 60 * 60 * 1000;
-
-  const { data: apiData, isLoading } = useGetAveragesQuery(
-    {
-      from: fromTime?.toISOString(),
-      to: toTime?.toISOString(),
-    },
-    {
-      skip: !isValidRange,
+  const location = useLocation();
+  
+  // Responsive breakpoints - improved breakpoint detection
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  
+  // Determine measurement type from URL
+  const currentPath = location.pathname.toLowerCase();
+  const measurementType = useMemo(() => {
+    if (currentPath.includes("temperature")) {
+      return "temperature";
+    } else if (currentPath.includes("humidity")) {
+      return "humidity";
+    } else if (currentPath.includes("dust")) {
+      return "dust";
+    } else {
+      // Default to the props value if URL doesn't match
+      return yLabel?.toLowerCase() || "temperature";
     }
-  );
+  }, [currentPath, yLabel]);
 
-  const handleFilterClick = (event) => setFilterAnchorEl(event.currentTarget);
-  const handleFilterClose = () => setFilterAnchorEl(null);
-
-  const handleFromTimeChange = (date) => {
-    setFromTime(date);
-    setDateError("");
-  };
-
-  const handleToTimeChange = (date) => {
-    setToTime(date);
-    if (fromTime && date) {
-      const diffHours = Math.abs((date - fromTime) / (1000 * 60 * 60));
-      if (diffHours >= 23.9 && diffHours <= 24.1) {
-        setDateError("");
-        handleFilterClose();
-      } else {
-        setDateError("Time range must be exactly 24 hours.");
-      }
+  // Using your specific color palette for each measurement type
+  const chartInfo = useMemo(() => {
+    if (currentPath.includes("temperature")) {
+      return { 
+        title: "Temperature", 
+        unit: "°C",
+        description: "Shows room temperature in degrees Celsius. Optimal range is 20-25°C for comfort.",
+        tooltipTitle: "Temperature Information",
+        color: "#FF9800" // Temperature color
+      };
+    } else if (currentPath.includes("humidity")) {
+      return { 
+        title: "Humidity", 
+        unit: "%",
+        description: "Shows relative humidity percentage. Optimal range is 40-60% for comfort and health.",
+        tooltipTitle: "Humidity Information",
+        color: "#29B6F6" // Humidity color
+      };
+    } else if (currentPath.includes("dust")) {
+      return { 
+        title: "Dust", 
+        unit: "µg/m³",
+        description: "Shows particulate matter concentration. Values under 12 µg/m³ are considered good air quality.",
+        tooltipTitle: "Dust Information",
+        color: "#FF5722" // Dust color
+      };
+    } else {
+      // Default to the props title if URL doesn't match
+      return { 
+        title: title || "Measurement", 
+        unit: "",
+        description: "Shows sensor data readings over time.",
+        tooltipTitle: "Measurement Information",
+        color: theme.palette.secondary.main
+      };
     }
-  };
+  }, [currentPath, title, theme.palette]);
+
+  const { data: apiData, isLoading } = useGetHalfHourlyAveragesQuery();
 
   const chartData = useMemo(() => {
     if (!apiData) return [];
-
-    const data = apiData
-      .filter(
-        (item) => item.timeRange && item[yLabel.toLowerCase()] !== undefined
+    
+    // Handle the data structure correctly
+    const LastHoursAvg = Array.isArray(apiData) ? apiData : apiData.data;
+    
+    if (!LastHoursAvg) return [];
+    
+    const data = LastHoursAvg.filter(
+        (item) => item.timeRange && item[measurementType] !== null
       )
       .map((item) => ({
         x: item.timeRange,
-        y: item[yLabel.toLowerCase()],
+        y: item[measurementType],
       }));
 
     return [
       {
-        id: yLabel,
+        id: `${chartInfo.title} (${chartInfo.unit})`,
+        color: chartInfo.color,
         data,
       },
     ];
-  }, [apiData, yLabel]);
+  }, [apiData, measurementType, chartInfo]);
+  
+  // Calculate responsive margins based on screen size
+  const chartMargins = useMemo(() => {
+    if (isSmallMobile) {
+      return { top: 20, right: 15, bottom: 90, left: 40 };
+    } else if (isMobile) {
+      return { top: 25, right: 20, bottom: 80, left: 45 };
+    } else if (isTablet) {
+      return { top: 30, right: 30, bottom: 70, left: 60 };
+    } else {
+      return { top: 40, right: 40, bottom: 60, left: 70 };
+    }
+  }, [isSmallMobile, isMobile, isTablet]);
+  
+  // Adjust tick values for different screen sizes
+  const getTickValues = (data) => {
+    if (!data || !data.length) return [];
+    
+    // For mobile, show fewer ticks
+    const interval = isSmallMobile ? 10 : isMobile ? 8 : isTablet ? 6 : 4;
+    
+    return data
+      .filter((_, index) => index % interval === 0)
+      .map(d => d.x);
+  };
 
   return (
-    <Box sx={{ position: "relative", px: 1, py: 2 }}>
+    <Paper 
+      elevation={3} 
+      sx={{ 
+        position: "relative", 
+        px: { xs: 0.5, sm: 1, md: 2 }, 
+        py: { xs: 1, sm: 2, md: 3 },
+        width: "100%",
+        borderRadius: { xs: 1, sm: 2 },
+        overflow: "hidden",
+        bgcolor: theme.palette.background.default, 
+        border: `1px solid ${theme.palette.primary[500]}`,
+      }}
+    >
       <Box
         display="flex"
-        alignItems="center"
+        flexDirection={{ xs: "column", sm: "row" }}
+        alignItems={{ xs: "flex-start", sm: "center" }}
         justifyContent="space-between"
-        sx={{ px: 2 }}
+        sx={{ 
+          px: { xs: 1, sm: 2 }, 
+          mb: { xs: 1.5, sm: 2 },
+          pb: { xs: 1, sm: 0 },
+          borderBottom: { xs: `1px solid ${theme.palette.primary[500]}`, sm: "none" }
+        }}
       >
-        <Box display="flex" alignItems="center">
-          <Typography variant="h4" fontWeight="bold" sx={{ mr: 1 }}>
-            {title}
+        <Box display="flex" alignItems="center" mb={{ xs: 1, sm: 0 }}>
+          <Typography 
+            variant={isSmallMobile ? "h5" : isMobile ? "h4" : "h3"} 
+            fontWeight="bold" 
+            sx={{ 
+              mr: 1,
+              color: "#fff", // Using specific measurement color
+              fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.5rem' }
+            }}
+          >
+            {chartInfo.title} Monitoring
           </Typography>
-          <IconButton onClick={handleFilterClick}>
-            <FilterList />
-          </IconButton>
+          <Tooltip 
+            title={
+              <React.Fragment>
+                <Typography color="inherit" variant="subtitle1">{chartInfo.tooltipTitle}</Typography>
+                <Typography variant="body2">{chartInfo.description}</Typography>
+              </React.Fragment>
+            } 
+            arrow 
+            placement="right"
+          >
+            <IconButton 
+              size={isSmallMobile ? "small" : "medium"} 
+              sx={{ ml: 0.5, color: "#827f7f" }}
+            >
+              <InfoIcon fontSize={isMobile ? "small" : "medium"} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+        
+        <Box 
+          display="flex" 
+          alignItems="center"
+          sx={{
+            bgcolor: theme.palette.primary[500],
+            borderRadius: 1,
+            px: 1.5,
+            py: 0.5,
+            width: { xs: "100%", sm: "auto" }
+          }}
+        >
+          <Typography 
+            variant={isMobile ? "body2" : "body1"}
+            color="white"
+            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+          >
+            Current View: <strong>{chartInfo.title}</strong> {chartInfo.unit ? `(${chartInfo.unit})` : ""}
+          </Typography>
+          <Tooltip 
+            title={
+              <React.Fragment>
+                <Typography color="inherit" variant="subtitle2">About This Chart</Typography>
+                <Typography variant="body2">
+                  This chart displays {chartInfo.title.toLowerCase()} readings over time in {chartInfo.unit}.
+                  Data points are collected every 30 minutes.
+                </Typography>
+              </React.Fragment>
+            } 
+            arrow
+          >
+            <IconButton size="small" sx={{ ml: 0.5, color: "#827f7f" }}>
+              <InfoIcon fontSize={isSmallMobile ? "small" : "medium"} />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Box>
 
-      <Menu
-        anchorEl={filterAnchorEl}
-        open={Boolean(filterAnchorEl)}
-        onClose={handleFilterClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        PaperProps={{
-          sx: {
-            p: 2,
-            width: 320,
-            borderRadius: 2,
-            boxShadow: 3,
-          },
-        }}
-      >
-        <Typography variant="h6" sx={{ px: 1, mb: 1 }}>
-          Select Time Range
-        </Typography>
-
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <DateTimePicker
-              label="From"
-              value={fromTime}
-              onChange={handleFromTimeChange}
-              renderInput={(params) => (
-                <TextField {...params} size="small" fullWidth />
-              )}
-            />
-            <DateTimePicker
-              label="To"
-              value={toTime}
-              onChange={handleToTimeChange}
-              renderInput={(params) => (
-                <TextField {...params} size="small" fullWidth />
-              )}
-            />
-            {dateError && (
-              <Typography color="error" variant="body2" sx={{ px: 1 }}>
-                {dateError}
-              </Typography>
-            )}
-            <Box display="flex" justifyContent="flex-end" mt={1}>
-              <IconButton
-                onClick={handleFilterClose}
-                disabled={Boolean(dateError)}
-                sx={{
-                  px: 2,
-                  py: 1,
-                  backgroundColor: theme.palette.primary.main,
-                  color: "white",
-                  borderRadius: 1,
-                  fontSize: 14,
-                  "&:hover": {
-                    backgroundColor: theme.palette.primary.dark,
-                  },
-                }}
-              >
-                Apply
-              </IconButton>
-            </Box>
-          </Box>
-        </LocalizationProvider>
-      </Menu>
-
       {isLoading ? (
         <LoadingApp />
-      ) : apiData && apiData.length > 0 ? (
-        <Box >
+      ) : apiData && chartData[0]?.data?.length > 0 ? (
+        <Box 
+          sx={{ 
+            height: { 
+              xs: "250px", // small mobile
+              sm: "350px", // mobile/tablet
+              md: "450px"  // desktop
+            },
+            width: "100%",
+            px: { xs: 0, sm: 1 }
+          }}
+        >
           <ResponsiveLine
             data={chartData}
+            colors={[chartInfo.color]} // Using specific measurement color
             theme={{
+              textColor: theme.palette.grey[100],
+              fontSize: isMobile ? 10 : 12,
               axis: {
-                domain: { line: { stroke: theme.palette.secondary[200] } },
-                legend: { text: { fill: theme.palette.text.primary } },
+                domain: { line: { stroke: theme.palette.grey[300], strokeWidth: 1 } },
+                legend: { 
+                  text: { 
+                    fill: theme.palette.grey[100],
+                    fontSize: isMobile ? 10 : 12
+                  } 
+                },
                 ticks: {
                   line: {
-                    stroke: theme.palette.secondary[200],
+                    stroke: theme.palette.grey[300],
                     strokeWidth: 1,
                   },
-                  text: { fill: theme.palette.text.primary },
+                  text: { 
+                    fill: theme.palette.grey[100],
+                    fontSize: isSmallMobile ? 8 : isMobile ? 10 : 12,
+                    fontWeight: isSmallMobile ? 400 : 500
+                  },
                 },
               },
-              legends: { text: { fill: theme.palette.text.primary } },
+              grid: {
+                line: {
+                  stroke: theme.palette.primary[500],
+                  strokeWidth: 0.5,
+                  strokeDasharray: "4 4",
+                }
+              },
+              legends: { 
+                text: { 
+                  fill: theme.palette.grey[100],
+                  fontSize: isMobile ? 10 : 12 
+                } 
+              },
               tooltip: {
                 container: {
-                  background: theme.palette.background.paper,
-                  color: theme.palette.text.primary,
+                  background: theme.palette.primary[700],
+                  color: theme.palette.grey[100],
+                  fontSize: isMobile ? 12 : 14,
+                  padding: isMobile ? 8 : 12,
+                  boxShadow: theme.shadows[3],
+                  borderRadius: 4,
+                  border: `1px solid ${chartInfo.color}`
                 },
               },
+              crosshair: {
+                line: {
+                  stroke: chartInfo.color,
+                  strokeWidth: 1,
+                  strokeOpacity: 0.75,
+                  strokeDasharray: "5 5"
+                }
+              }
             }}
-            margin={{ top: 40, right: 40, bottom: 60, left: 70 }}
+            margin={chartMargins}
             xScale={{ type: "point" }}
             yScale={{
               type: "linear",
@@ -217,85 +302,143 @@ const OverviewChart = ({
               reverse: false,
             }}
             axisBottom={{
-              tickSize: 6,
+              tickSize: 5,
               tickPadding: 5,
-              tickRotation: -45,
-              legend: isDashboard ? "Time" : "",
-              legendOffset: 50,
+              tickRotation: isSmallMobile ? -75 : isMobile ? -65 : -45,
+              legend: !isMobile ? "Time (Half-hour intervals)" : "",
+              legendOffset: isMobile ? 65 : 50,
               legendPosition: "middle",
+              tickValues: getTickValues(chartData[0]?.data),
+              format: (value) => {
+                // Shorten the time format for mobile devices
+                if (isMobile) {
+                  return value.split(" ")[1]; // Only show the time part
+                }
+                return value;
+              }
             }}
             axisLeft={{
               tickSize: 5,
               tickPadding: 5,
               tickRotation: 0,
-              legend: isDashboard ? yLabel : "",
-              legendOffset: -60,
+              legend: !isMobile ? `${chartInfo.title} (${chartInfo.unit})` : "",
+              legendOffset: isMobile ? -40 : -60,
               legendPosition: "middle",
+              format: (value) => 
+                isMobile ? value.toFixed(1) : value.toFixed(2)
             }}
-            pointSize={10}
-            pointColor={{ theme: "background" }}
+            pointSize={isSmallMobile ? 4 : isMobile ? 6 : 8}
+            pointColor={theme.palette.primary[700]}
             pointBorderWidth={2}
-            pointBorderColor={{ from: "serieColor" }}
-            enableArea={isDashboard}
+            pointBorderColor={chartInfo.color}
+            pointLabelYOffset={-12}
+            enableArea={true}
+            areaBaselineValue={chartInfo.title === "Temperature" ? 15 : 0}
+            areaOpacity={0.15}
             enableGridX={false}
-            enableGridY={true}
+            enableGridY={!isSmallMobile}
             useMesh={true}
-            legends={[
-              {
-                anchor: "top-right",
-                direction: "column",
-                translateX: -30,
-                translateY: -40,
-                itemsSpacing: 6,
-                itemDirection: "left-to-right",
-                itemWidth: 100,
-                itemHeight: 20,
-                itemOpacity: 0.75,
-                symbolSize: 12,
-                symbolShape: "circle",
-                symbolBorderColor: "rgba(0, 0, 0, .5)",
-                effects: [
-                  {
-                    on: "hover",
-                    style: {
-                      itemBackground: theme.palette.action.hover,
-                      itemOpacity: 1,
-                    },
-                  },
-                ],
-              },
-            ]}
+            curve="monotoneX"
+            lineWidth={isSmallMobile ? 2 : 3}
+            crosshairType="cross"
           />
         </Box>
       ) : (
         <Box
-        sx={{
-          width: "100%",
-          minHeight: {
-            xs: "250px",  // small screens
-            sm: "300px",  // tablets
-            md: "400px",  // desktops
-          }
-        }}
-          width="100%"
+          sx={{
+            width: "100%",
+            minHeight: {
+              xs: "150px",  // small mobile
+              sm: "200px",  // mobile/tablets
+              md: "300px",  // desktops
+            },
+            p: 2
+          }}
           display="flex"
           justifyContent="center"
           alignItems="center"
         >
-          <Typography
-            variant="h5"
-            fontWeight="500"
-            bgcolor={theme.palette.primary[400]}
-            borderRadius="10px"
-            boxShadow={3}
-            p={3}
-            textAlign="center"
+          <Paper
+            elevation={3}
+            sx={{
+              bgcolor: theme.palette.primary[700],
+              borderRadius: "10px",
+              p: isMobile ? 2 : 3,
+              width: { xs: "90%", sm: "70%", md: "50%" },
+              borderLeft: `5px solid ${chartInfo.color}`
+            }}
           >
-            No data available.
-          </Typography>
+            <Typography
+              variant={isMobile ? "body1" : "h6"}
+              fontWeight="500"
+              textAlign="center"
+              color="white"
+            >
+              No {chartInfo.title.toLowerCase()} data available.
+              <Tooltip title="Try refreshing the page or check your connection">
+                <IconButton size="small" sx={{ ml: 1, color: theme.palette.grey[100] }}>
+                  <InfoIcon fontSize={isSmallMobile ? "small" : "medium"} />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+          </Paper>
         </Box>
       )}
-    </Box>
+      
+      {!isLoading && apiData && chartData[0]?.data?.length > 0 && (
+        <Box 
+          sx={{ 
+            mt: { xs: 1, sm: 2 }, 
+            px: { xs: 1, sm: 2 },
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            gap: { xs: 1, sm: 2 },
+            bgcolor: theme.palette.primary[500],
+            borderRadius: 1,
+            py: 1,
+            px: 2
+          }}
+        >
+          <Typography 
+            variant="caption" 
+            color={theme.palette.grey[100]}
+            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' } }}
+          >
+            Data collected every 30 minutes • Last updated: {
+              chartData[0]?.data?.length > 0 
+                ? chartData[0].data[chartData[0].data.length - 1].x 
+                : "N/A"
+            }
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box 
+              sx={{ 
+                width: 16, 
+                height: 16, 
+                bgcolor: chartInfo.color, 
+                borderRadius: '50%',
+                mr: 1 
+              }} 
+            />
+            <Typography 
+              variant="caption" 
+              fontWeight="bold"
+              color={theme.palette.grey[100]}
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' } }}
+            >
+              {chartInfo.title}: {
+                chartData[0]?.data?.length > 0 
+                  ? `${chartData[0].data[chartData[0].data.length - 1].y.toFixed(1)} ${chartInfo.unit}`
+                  : "N/A"
+              }
+            </Typography>
+          </Box>
+        </Box>
+      )}
+    </Paper>
   );
 };
 

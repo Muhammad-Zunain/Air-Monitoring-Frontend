@@ -185,7 +185,7 @@ const Navbar = ({ user, isSidebarOpen, setIsSidebarOpen }) => {
             </IconButton>
           )}
           
-          <Tooltip title={theme.palette.mode === "dark" ? "Light Mode" : "Dark Mode"}>
+          {/* <Tooltip title={theme.palette.mode === "dark" ? "Light Mode" : "Dark Mode"}>
             <IconButton 
               onClick={() => dispatch(setMode())}
               sx={{
@@ -216,7 +216,7 @@ const Navbar = ({ user, isSidebarOpen, setIsSidebarOpen }) => {
                 />
               )}
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
           
           <Tooltip title="Notifications">
             <IconButton

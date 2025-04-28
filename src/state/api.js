@@ -7,7 +7,7 @@ export const api = createApi({
   tagTypes: ["AirData", "AirStats", "AirDataByYear"], 
   endpoints: (builder) => ({
     getAllAirData: builder.query({
-      query: () => "/get-air-data/",
+      query: () => "/get-air-data",
       providesTags: ["AirData"],
     }),
     getAirDataByYear: builder.query({
@@ -18,8 +18,12 @@ export const api = createApi({
       query: () => `/get-stat-data/`, 
       providesTags: ["AirStats"],
     }), 
-    getAverages: builder.query({
-      query: ({ from, to }) => `/get-data-time-range?from=${from}&to=${to}`,
+    getHalfHourlyAverages: builder.query({
+      query: () => `/get-data-last-hour`,
+      providesTags: ["AirData"],
+    }),
+    getControllerLocation:builder.query({
+      query : () => "/get-controllers-location/"
     }),
     uploadFirmware: builder.mutation({
       query: (file) => {
@@ -43,6 +47,7 @@ export const {
   useGetAllAirDataQuery,
   useGetAirDataByYearQuery,
   useGetAirStatsQuery,
-  useGetAveragesQuery,
+  useGetHalfHourlyAveragesQuery,
   useUploadFirmwareMutation,
+  useGetControllerLocationQuery,
 } = api;

@@ -1,94 +1,103 @@
-import React from "react";
-import { Box, useTheme } from "@mui/material";
+import React, { useState } from "react";
+import { Box, useTheme, Typography, FormControl, InputLabel, Select, MenuItem, Paper } from "@mui/material";
 import Header from "../components/Header";
-import { ResponsiveChoropleth } from "@nivo/geo";
-import { geoData } from "../state/geoData.js"; // This still includes the world map shapes
+import { useGetControllerLocationQuery } from "../state/api.js";
+import LoadingApp from "../components/LoadingApp.jsx";
+import PakistanMap from "../components/PakistanMap.jsx";
 
 const Geography = () => {
   const theme = useTheme();
-  const staticData = [
-    { id: "USA", value: 38 },
-    { id: "FRA", value: 25 },
-    { id: "CHN", value: 50 },
-    { id: "IND", value: 35 },
-    { id: "PAK", value: 15 },
-    { id: "BRA", value: 20 },
-    { id: "CAN", value: 28 },
-    { id: "AUS", value: 12 },
-    { id: "ZAF", value: 10 },
+  const [selectedProvince, setSelectedProvince] = useState("all");
+
+  // Use RTK Query to fetch locations
+  const { data, isLoading, error } = useGetControllerLocationQuery();
+
+  // Prepare location data
+  const locationData = data?.data || [];
+
+  // Filter locations based on selected province
+  const filteredLocations = selectedProvince === "all" 
+    ? locationData 
+    : locationData.filter(location => location.province === selectedProvince);
+
+  const provinces = [
+    { value: "all", label: "All Provinces" },
+    { value: "Punjab", label: "Punjab" },
+    { value: "Sindh", label: "Sindh" },
+    { value: "Khyber Pakhtunkhwa", label: "Khyber Pakhtunkhwa" },
+    { value: "Balochistan", label: "Balochistan" },
+    { value: "Gilgit-Baltistan", label: "Gilgit-Baltistan" },
+    { value: "Azad Jammu & Kashmir", label: "Azad Jammu & Kashmir" },
+    { value: "Islamabad", label: "Islamabad Capital Territory" }
   ];
 
   return (
     <Box m="1.5rem 2.5rem">
-      <Header title="GEOGRAPHY" subtitle="Find where your users are located." />
-      <Box
-        mt="40px"
-        height="75vh"
-        border={`1px solid ${theme.palette.secondary[200]}`}
-        borderRadius="4px"
-      >
-        <ResponsiveChoropleth
-          data={staticData}
-          theme={{
-            axis: {
-              domain: { line: { stroke: theme.palette.secondary[200] } },
-              legend: { text: { fill: theme.palette.secondary[200] } },
-              ticks: {
-                line: {
-                  stroke: theme.palette.secondary[200],
-                  strokeWidth: 1,
-                },
-                text: { fill: theme.palette.secondary[200] },
-              },
-            },
-            legends: {
-              text: { fill: theme.palette.secondary[200] },
-            },
-            tooltip: {
-              container: { color: theme.palette.primary.main },
-            },
+      <Header 
+        title="GEOGRAPHY" 
+        subtitle="Find where your controllers are located in Pakistan." 
+      />
+      
+      <Box mt="20px" display="flex" justifyContent="space-between" flexWrap="wrap">
+        <FormControl size="small" sx={{ minWidth: 220 }}>
+          <InputLabel>Filter by Province</InputLabel>
+          <Select
+            value={selectedProvince}
+            label="Filter by Province"
+            onChange={(e) => setSelectedProvince(e.target.value)}
+          >
+            {provinces.map((province) => (
+              <MenuItem key={province.value} value={province.value}>
+                {province.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        
+        <Paper 
+          elevation={1}
+          sx={{ 
+            p: "10px 16px", 
+            display: "flex", 
+            alignItems: "center",
+            bgcolor: theme.palette.background.alt,
+            color: theme.palette.secondary[100]
           }}
-          features={geoData.features}
-          margin={{ top: 0, right: 0, bottom: 0, left: -50 }}
-          domain={[0, 60]}
-          unknownColor="#666666"
-          label="properties.name"
-          valueFormat=".2s"
-          projectionScale={150}
-          projectionTranslation={[0.45, 0.6]}
-          projectionRotation={[0, 0, 0]}
-          borderWidth={1.3}
-          borderColor="#ffffff"
-          legends={[
-            {
-              anchor: "bottom-right",
-              direction: "column",
-              justify: true,
-              translateX: 0,
-              translateY: -125,
-              itemsSpacing: 0,
-              itemWidth: 94,
-              itemHeight: 18,
-              itemDirection: "left-to-right",
-              itemTextColor: theme.palette.secondary[200],
-              itemOpacity: 0.85,
-              symbolSize: 18,
-              effects: [
-                {
-                  on: "hover",
-                  style: {
-                    itemTextColor: theme.palette.background.alt,
-                    itemOpacity: 1,
-                  },
-                },
-              ],
-            },
-          ]}
-        />
+        >
+          <Typography variant="h6" fontWeight="600">
+            Controllers: {filteredLocations.length}
+          </Typography>
+        </Paper>
       </Box>
+
+      {isLoading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="75vh">
+          <LoadingApp />
+        </Box>
+      ) : error ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="75vh">
+          <Typography variant="h5" color="error">
+            Error loading locations: {error.message || "Unknown error"}
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          mt="20px"
+          height="75vh"
+          border={`1px solid ${theme.palette.secondary[200]}`}
+          borderRadius="4px"
+          sx={{
+            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+            overflow: 'hidden',
+            position: 'relative'
+          }}
+        >
+          {/* Pakistan Map Component */}
+          <PakistanMap locations={filteredLocations} />
+        </Box>
+      )}
     </Box>
   );
 };
 
 export default Geography;
-    

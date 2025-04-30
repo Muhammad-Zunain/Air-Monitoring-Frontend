@@ -163,9 +163,7 @@ const Temperature = () => {
               }}
             >
               <OverviewChart
-                title="Temperature Overview"
-                yLabel="Temperature"
-                isDashboard={true}
+               isDashboard={true}
               />
             </Box>
           </Card>

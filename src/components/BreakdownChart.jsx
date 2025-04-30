@@ -288,10 +288,15 @@ const OverviewChart = ({ isDashboard }) => {
         </FormControl>
       </Box>
 
+      {/* THIS IS THE PROBLEMATIC PART - FIXED HEIGHT CALCULATION */}
       <Box 
         sx={{ 
-          height: isDashboard ? "calc(100% - 140px)" : 
-                 { xs: "250px", sm: "350px", md: "450px" },
+          height: isDashboard 
+            ? { xs: "200px", sm: "450px", md: "300px" } // Fixed heights for dashboard view
+            : { xs: "250px", sm: "350px", md: "450px" }, // Fixed heights for regular view
+          maxHeight: isDashboard 
+            ? { xs: "200px", sm: "250px", md: "300px" } // Add max-height constraints
+            : { xs: "250px", sm: "350px", md: "450px" },
           width: "100%",
           px: { xs: 0, sm: 1 },
           position: "relative"

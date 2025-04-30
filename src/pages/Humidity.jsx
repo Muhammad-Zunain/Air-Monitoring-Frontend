@@ -163,8 +163,6 @@ const Humidity = () => {
               }}
             >
               <OverviewChart
-                title="Humidity Overview"
-                yLabel="Humidity"
                 isDashboard={true}
               />
             </Box>

@@ -19,7 +19,7 @@ export const api = createApi({
       providesTags: ["AirStats"],
     }), 
     getHalfHourlyAverages: builder.query({
-      query: () => `/get-data-last-hour`,
+      query: () => `/get-data-half-hour`,
       providesTags: ["AirData"],
     }),
     getControllerLocation:builder.query({

@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const api = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:2000/api/air-monitoring" }),
+  baseQuery: fetchBaseQuery({ baseUrl: "https://am-backend-two.vercel.app/api" }),
   tagTypes: ["AirData", "AirStats", "AirDataByYear"], 
   endpoints: (builder) => ({
     getAllAirData: builder.query({

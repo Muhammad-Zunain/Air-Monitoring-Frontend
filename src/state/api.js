@@ -3,43 +3,43 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const api = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({ baseUrl: "https://am-backend-two.vercel.app/api" }),
-  tagTypes: ["AirData", "AirStats", "AirDataByYear"], 
+  baseQuery: fetchBaseQuery({
+    baseUrl: "https://am-backend-two.vercel.app/api",
+  }),
+  tagTypes: ["AirData", "AirStats", "AirDataByYear"],
   endpoints: (builder) => ({
     getAllAirData: builder.query({
       query: () => "/get-air-data",
       providesTags: ["AirData"],
     }),
     getAirDataByYear: builder.query({
-      query: ({ year, type }) => `/get-monthly-averages?year=${year}&type=${type}`,
+      query: ({ year, type }) =>
+        `/get-monthly-averages?year=${year}&type=${type}`,
       providesTags: ["AirDataByYear"],
     }),
     getAirStats: builder.query({
-      query: () => `/get-stat-data/`, 
+      query: () => `/get-stat-data/`,
       providesTags: ["AirStats"],
-    }), 
+    }),
     getHalfHourlyAverages: builder.query({
-      query: () => `/get-data-half-hour`,
+      query: () => `/get-data-last-hour`,
       providesTags: ["AirData"],
     }),
-    getControllerLocation:builder.query({
-      query : () => "/get-controllers-location/"
+    getControllerLocation: builder.query({
+      query: () => "/get-controllers-location/",
     }),
     uploadFirmware: builder.mutation({
       query: (file) => {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append("file", file);
 
         return {
-          url: 'upload-bin-file',
-          method: 'POST',
+          url: "upload-bin-file",
+          method: "POST",
           body: formData,
         };
-},
-}),
-
-
-    
+      },
+    }),
   }),
 });
 

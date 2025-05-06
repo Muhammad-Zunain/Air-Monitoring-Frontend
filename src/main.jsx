@@ -3,10 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Provider, useSelector } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-
-
 import "./index.css";
-
 import dataReducer from "./features/data.Slice.js"; 
 import statDataReducer from "./features/airStat.Slice.js"; 
 import globalReducer from "./features/index.js";

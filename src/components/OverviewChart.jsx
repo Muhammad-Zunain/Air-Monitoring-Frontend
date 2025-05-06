@@ -77,10 +77,9 @@ const OverviewChart = ({
 
   const chartData = useMemo(() => {
     if (!apiData) return [];
-    
-    // Handle the data structure correctly
+    console.log(apiData)
     const LastHoursAvg = Array.isArray(apiData) ? apiData : apiData.data;
-    
+    console.log(LastHoursAvg)
     if (!LastHoursAvg) return [];
     
     const data = LastHoursAvg.filter(

@@ -89,9 +89,8 @@ const OverviewChart = ({ isDashboard }) => {
     if (!isLoading && airDataAvg?.data) {
       setAvgMonthData(airDataAvg.data.monthlyAverages);
       setLoading(false);
-      setRetryCount(0); // Reset retry count when data loads successfully
+      setRetryCount(0); 
     } else if (error && retryCount < 3) {
-      // Retry logic if there's an error
       const timer = setTimeout(() => {
         setRetryCount(prevCount => prevCount + 1);
         refetch();
